@@ -37,7 +37,7 @@ mc=20 % chaser mass [kg]
 
 
 w_c_0=[0;0;0] % initial ang velocity chaser [rad/s]
-w_t_0=[0.05;-0.06;0.02] % initial ang velocity target [rad/s]
+w_t_0=[0.08;0.09;0.01] % initial ang velocity target [rad/s]
 
 q_c_0=[0.8;0.3464;0.3464;0.3464] % initial chaser quaternion
 q_t_0=[1;0;0;0]% initial target quaternion
@@ -63,7 +63,7 @@ q_r_0=quatProd(quatRecip(q_t_0),q_c_0) % Equation 13 Liu
 dq_r_0=0.5*[0, -transpose(w_r_0);
             w_r_0, -w_r_0tilde]*q_r_0 % Equation 14 Liu
 
-dq_r_0vec=[0.05;0.3;-0.1]
+dq_r_0vec=[0.07;-0.5;-0.3]
         
 T_0=[0, -q_r_0(4), q_r_0(3); q_r_0(4), 0, -q_r_0(2);-q_r_0(3), q_r_0(2), 0] + q_r_0(1)*eye(3)
 
@@ -78,15 +78,15 @@ dtheta_t_0=(n_t*(1+e_t*cos(theta_t_0))^2)/((1-e_t^2)^(3/2)) % initial target ang
 r_c_0=p_c/(1+e_c*cos(theta_c_0)) %initial chaser distance from earth CoM [m]
 r_t_0=p_t/(1+e_t*cos(theta_t_0)) %initial target distance from earth CoM [m]
 
-rho_0=[-20; 12; -7] % initial relative position
-drho_0=[0.5; -0.7; 1] % initial relative velocity
+rho_0=[25; 1; 10] % initial relative position
+drho_0=[-2; -0.7; -1.1] % initial relative velocity
 
 beta=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 p=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 q=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 eta=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 
-rho_d=[2; 0; 0] % desired final relative position
+rho_d=[2; 3; 3] % desired final relative position
 drho_d=[0; 0; 0] % desired final relative velocity
 
 q_d=[1;0;0;0] % desired final relatitve atttitude

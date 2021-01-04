@@ -78,15 +78,15 @@ dtheta_t_0=(n_t*(1+e_t*cos(theta_t_0))^2)/((1-e_t^2)^(3/2)) % initial target ang
 r_c_0=p_c/(1+e_c*cos(theta_c_0)) %initial chaser distance from earth CoM [m]
 r_t_0=p_t/(1+e_t*cos(theta_t_0)) %initial target distance from earth CoM [m]
 
-rho_0=[-20; 12; -7] % initial relative position
-drho_0=[0.5; -0.7; 1] % initial relative velocity
+rho_0=[25; 1; 10] % initial relative position
+drho_0=[-2; -0.7; -1.1] % initial relative velocity
 
 beta=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 p=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 q=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 eta=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 
-rho_d=[2; 0; 0] % desired final relative position
+rho_d=[2; 3; 3] % desired final relative position
 drho_d=[0; 0; 0] % desired final relative velocity
 
 q_d=[1;0;0;0] % desired final relatitve atttitude
