@@ -37,7 +37,7 @@ mc=20 % chaser mass [kg]
 
 
 w_c_0=[0;0;0] % initial ang velocity chaser [rad/s]
-w_t_0=[0.08;0.09;0.01] % initial ang velocity target [rad/s]
+w_t_0=[0.05;-0.06;0.02] % initial ang velocity target [rad/s]
 
 q_c_0=[0.8;0.3464;0.3464;0.3464] % initial chaser quaternion
 q_t_0=[1;0;0;0]% initial target quaternion
@@ -63,7 +63,7 @@ q_r_0=quatProd(quatRecip(q_t_0),q_c_0) % Equation 13 Liu
 dq_r_0=0.5*[0, -transpose(w_r_0);
             w_r_0, -w_r_0tilde]*q_r_0 % Equation 14 Liu
 
-dq_r_0vec=[0.07;-0.5;-0.3]
+dq_r_0vec=[0.05;0.3;-0.1]
         
 T_0=[0, -q_r_0(4), q_r_0(3); q_r_0(4), 0, -q_r_0(2);-q_r_0(3), q_r_0(2), 0] + q_r_0(1)*eye(3)
 
@@ -78,15 +78,15 @@ dtheta_t_0=(n_t*(1+e_t*cos(theta_t_0))^2)/((1-e_t^2)^(3/2)) % initial target ang
 r_c_0=p_c/(1+e_c*cos(theta_c_0)) %initial chaser distance from earth CoM [m]
 r_t_0=p_t/(1+e_t*cos(theta_t_0)) %initial target distance from earth CoM [m]
 
-rho_0=[25; 1; 10] % initial relative position
-drho_0=[-2; -0.7; -1.1] % initial relative velocity
+rho_0=[-20; 12; -7] % initial relative position
+drho_0=[0.5; -0.7; 1] % initial relative velocity
 
 beta=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 p=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 q=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 eta=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 
-rho_d=[2; 3; 3] % desired final relative position
+rho_d=[2; 0; 0] % desired final relative position
 drho_d=[0; 0; 0] % desired final relative velocity
 
 q_d=[1;0;0;0] % desired final relatitve atttitude
@@ -94,7 +94,7 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 350
+tsim = 150
 
 tstep =1
 options = 0
@@ -528,11 +528,31 @@ pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
 mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
 
 Chrel=0.3;
+etaAtt=5e-4
 beta=0.5;
 gradUquat=Chrel*(q_r(2:4,i)-[0;0;0])/sqrt((norm(q_r(2:4,i)-[0;0;0]))^2+1);
 
-sAtt=dq_r(2:4,i)+beta*gradUquat;
-sAttout(1:3,i)=sAtt;
+sAtt=dq_r(2:4)+beta*gradUquat
+
+if abs(sAtt(1))>=etaAtt
+    s1Att=sign(sAtt(1))
+else
+    s1Att=sAtt(1)/etaAtt
+end
+
+if abs(sAtt(2))>=etaAtt
+    s2Att=sign(sAtt(2))
+else
+    s2Att=sAtt(2)/etaAtt
+end
+
+if abs(sAtt(3))>=etaAtt
+    s3Att=sign(sAtt(3))
+else
+    s3Att=sAtt(3)/etaAtt
+end
+
+satAtt=[s1Att; s2Att; s3Att]
 grad2Uquat=Chrel*(((norm(q_r(2:4,i)-[0;0;0]))^2+1)*eye(3)-(q_r(2:4,i)-[0;0;0])*transpose(q_r(2:4,i)-[0;0;0]))/((norm(q_r(2:4,i)-[0;0;0]))^2+1)^(3/2);
 
 T=[0, -q_r(4,i), q_r(3,i); q_r(4,i), 0, -q_r(2,i);-q_r(3,i), q_r(2,i), 0] + q_r(1,i)*eye(3);
@@ -556,7 +576,7 @@ Nstar=transpose(P)*([0, -Pdq_r(3), Pdq_r(2); Pdq_r(3), 0, -Pdq_r(1); -Pdq_r(2), 
     0.5*transpose(P)*([0, -Arw_t(3), Arw_t(2); Arw_t(3), 0, -Arw_t(1); -Arw_t(2), Arw_t(1), 0]*Ic*Ar*w_t(1:3,i))-...
     0.5*transpose(P)*Ic*([0, -twoPdq_r(3), twoPdq_r(2); twoPdq_r(3), 0, -twoPdq_r(1);-twoPdq_r(2), twoPdq_r(1), 0]*Ar*w_t(1:3,i)-Ar*dw_t);
 
-Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4,i)-gamma2*sign(sAtt)-mdiag*sign(sAtt);
+Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4,i)-gamma2*sign(satAtt)-mdiag*sign(satAtt);
 Tcprime(1:3,i) = 2*transpose(T)*Tc;
 end
 time2=toc
@@ -634,10 +654,10 @@ plot(t,q_r);
 title("q_r");
 legend;
 
-% figure;
-% plot(t,Tcprime);
-% title("Tcprime");
-% legend;
+figure;
+plot(t,Tcprime);
+title("Tcprime");
+legend;
 % 
 figure;
 plot(t,sAttout);

@@ -164,19 +164,19 @@ gradUrep = 4*k*(rho-rho_obs)*((norm(rho-rho_obs))^2-delta_0^2)/((norm(rho-rho_ob
 sRel=drho+alpha*(gradUatt+gradUrep)
 
 if abs(sRel(1))>=etaPos
-    s1Pos=sign(sRel(1))
+    s1Pos=tanh(sRel(1))
 else
     s1Pos=sRel(1)/etaPos
 end
 
 if abs(sRel(2))>=etaPos
-    s2Pos=sign(sRel(2))
+    s2Pos=tanh(sRel(2))
 else
     s2Pos=sRel(2)/etaPos
 end
 
 if abs(sRel(3))>=etaPos
-    s3Pos=sign(sRel(3))
+    s3Pos=tanh(sRel(3))
 else
     s3Pos=sRel(3)/etaPos
 end
@@ -227,6 +227,7 @@ else
 end
 
 satAtt=[s1Att; s2Att; s3Att]
+% satAtt=[tanh(sAtt(1)); tanh(sAtt(2)); tanh(sAtt(3))]
 
 grad2Uquat=Chrel*(((norm(q_r(2:4)-[0;0;0]))^2+1)*eye(3)-(q_r(2:4)-[0;0;0])*transpose(q_r(2:4)-[0;0;0]))/((norm(q_r(2:4)-[0;0;0]))^2+1)^(3/2)
 
@@ -282,7 +283,7 @@ der(5:8,1)=0.5*G_t*q_t % derivative target attitude
 der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity 
 der(12:15,1)=0.5*G_c*q_c
 der(16:18,1)=drho
-der(19:21,1)=g/mc+Fc/mc
+der(19:21,1)= g/mc+Fc/mc
 % der(12:18,1)=derror % derivative error
 % der(19:25,1)=f%+B*u % derivative velocity error
 % der(16:19,1)=dq_r
