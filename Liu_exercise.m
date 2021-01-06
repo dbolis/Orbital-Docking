@@ -95,9 +95,9 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 140
+tsim = 200
 
-tstep =1
+tstep =2
 options = 0
 X0=[theta_c_0; dtheta_c_0; theta_t_0; dtheta_t_0; rho_0; drho_0; w_c_0; w_t_0;q_c_0;q_t_0;w_r_0;q_r_0;dq_r_0; error_0; derror_0]
 X0min=[theta_t_0; rho_0; drho_0;w_t_0;q_t_0;w_r_0;q_r_0;dq_r_0]
@@ -540,21 +540,19 @@ if abs(sAtt(1))>=etaAtt
     s1Att=sign(sAtt(1))
 else
     s1Att=sAtt(1)/etaAtt
-    "hello"
+    
 end
 
 if abs(sAtt(2))>=etaAtt
     s2Att=sign(sAtt(2))
 else
     s2Att=sAtt(2)/etaAtt
-    "hello"
 end
 
 if abs(sAtt(3))>=etaAtt
     s3Att=sign(sAtt(3))
 else
     s3Att=sAtt(3)/etaAtt
-    "hello"
 end
 
 satAtt=[s1Att; s2Att; s3Att]
@@ -686,10 +684,10 @@ xlabel("time [s]")
 ylabel("Torque [Nm]")
 legend;
 % 
-% figure;
-% plot(t,sAttout);
-% title("sAttout");
-% legend;
+figure;
+plot(t,sAttout);
+title("sAttout");
+legend;
 % figure
 % plot(t,Eulersq_r)
 % title("Eulersq_r")

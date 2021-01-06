@@ -96,7 +96,7 @@ Act=Ac*At; %EQ 10 Liu
 
 
 w_r=w_c-Ar*w_t; %EQ 11 Liu solved for w_c
-% w_rout=[w_rout w_r]
+% w_rout=[w_rout w_r];
 w_c_tilde = [0, -w_c(3), w_c(2); %EQ 12 Liu
              w_c(3), 0, -w_c(1);
               -w_c(2), w_c(1), 0];
@@ -281,10 +281,15 @@ t
 der(1,1)=(n_t*(1+e_t*cos(theta_t))^2)/((1-e_t^2)^(3/2)) % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
 der(5:8,1)=0.5*G_t*q_t % derivative target attitude
-der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity 
+% if t<150
+%     der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity 
+% else
+%     der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c) % derivative relative angular velocity 
+% end
+der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity
 der(12:15,1)=0.5*G_c*q_c
 der(16:18,1)=drho
-der(19:21,1)= g/mc+Fc/mc
+der(19:21,1)= g/mc%+Fc/mc
 % der(12:18,1)=derror % derivative error
 % der(19:25,1)=f%+B*u % derivative velocity error
 % der(16:19,1)=dq_r

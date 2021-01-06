@@ -17,7 +17,7 @@ drho=x(19:21)
 % drho=derror(1:3)+drho_d; % relative velocity
 
 
-global count w_rout
+global count w_rout TOUT
 count=count+1
 
 %% Relative Orbit Dynamics
@@ -96,7 +96,7 @@ Act=Ac*At; %EQ 10 Liu
 
 
 w_r=w_c-Ar*w_t; %EQ 11 Liu solved for w_c
-% w_rout=[w_rout w_r]
+w_rout=[w_rout w_r]
 w_c_tilde = [0, -w_c(3), w_c(2); %EQ 12 Liu
              w_c(3), 0, -w_c(1);
               -w_c(2), w_c(1), 0];
@@ -221,7 +221,7 @@ else
 end
 
 if abs(sAtt(3))>=etaAtt
-    s3Att=tanh(sAtt(3))
+    s3Att=sign(sAtt(3))
 else
     s3Att=sAtt(3)/etaAtt
 end
@@ -253,6 +253,7 @@ Nstar=transpose(P)*([0, -Pdq_r(3), Pdq_r(2); Pdq_r(3), 0, -Pdq_r(1); -Pdq_r(2), 
 
 Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4)-gamma2*satAtt-mdiag*satAtt
 Tcprime = 2*transpose(T)*Tc
+% TOUT=[TOUT, Tcprime]
 % TEST=0.5*transpose(P)*Tcprime
 
 
@@ -280,7 +281,8 @@ t
 der(1,1)=(n_t*(1+e_t*cos(theta_t))^2)/((1-e_t^2)^(3/2)) % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
 der(5:8,1)=0.5*G_t*q_t % derivative target attitude
-der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity 
+if w_r<0.01
+    der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity 
 der(12:15,1)=0.5*G_c*q_c
 der(16:18,1)=drho
 der(19:21,1)= g/mc+Fc/mc
