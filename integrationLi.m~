@@ -17,7 +17,7 @@ drho=x(19:21)
 % drho=derror(1:3)+drho_d; % relative velocity
 
 
-global count w_rout TOUT
+global count w_rout
 count=count+1
 
 %% Relative Orbit Dynamics
@@ -221,7 +221,7 @@ else
 end
 
 if abs(sAtt(3))>=etaAtt
-    s3Att=sign(sAtt(3))
+    s3Att=tanh(sAtt(3))
 else
     s3Att=sAtt(3)/etaAtt
 end
@@ -253,7 +253,6 @@ Nstar=transpose(P)*([0, -Pdq_r(3), Pdq_r(2); Pdq_r(3), 0, -Pdq_r(1); -Pdq_r(2), 
 
 Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4)-gamma2*satAtt-mdiag*satAtt
 Tcprime = 2*transpose(T)*Tc
-% TOUT=[TOUT, Tcprime]
 % TEST=0.5*transpose(P)*Tcprime
 
 
