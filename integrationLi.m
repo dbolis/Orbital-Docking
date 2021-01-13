@@ -1,4 +1,4 @@
-function der = integrationLi(t,x,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function der = integrationLi(t,x,e_v,p_v,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 theta_t=x(1); % True anamoly 
 w_t=x(2:4); % target ang velocity
 q_t=x(5:8); % target attitude
@@ -6,6 +6,10 @@ w_c=x(9:11);% relative angular velocity
 q_c=x(12:15)
 rho=x(16:18)
 drho=x(19:21)
+theta_v=x(22)
+rho_c=x(23:25)
+drho_c=x(26:28)
+
 
 % error=x(12:18); % error
 % derror=x(19:25); % velocity error
@@ -20,10 +24,29 @@ drho=x(19:21)
 global count w_rout TOUT
 count=count+1
 
+
+
+%% Dynamics with Perterbances
+dtheta_v=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2
+d2theta_v=-2*(mu/p_v^3)*(e_v*sin(theta_v))*(1+e_v*cos(theta_v))^3
+
+%%% Chaser
+
+r_v=p_v/(1+e_v*cos(theta_v)) %% virtual radius from CoM
+r_cVec=[r_v;0;0]+rho_c %% in virtual coordinates
+v_cVec=[sqrt(mu/p_v)*e_v*sin(theta_v)+drho_c(1)-dtheta_v*rho_c(2); sqrt(mu/p_v)*(1+e_v*cos(theta_v))+drho_c(2)+dtheta_v*rho_c(1); drho_c(3)] 
+
+
+
+
 %% Relative Orbit Dynamics
 
-dtheta_t=(n_t*(1+e_t*cos(theta_t))^2)/((1-e_t^2)^(3/2)); % target orbital velocity
-d2theta_t=(-2*n_t^2*e_t*sin(theta_t)*(1+e_t*cos(theta_t))^3)/((1-e_t^2)^3); % target orbital acceleration
+% dtheta_t=(n_t*(1+e_t*cos(theta_t))^2)/((1-e_t^2)^(3/2)); % target orbital velocity
+% d2theta_t=(-2*n_t^2*e_t*sin(theta_t)*(1+e_t*cos(theta_t))^3)/((1-e_t^2)^3); % target orbital acceleration
+
+dtheta_t=sqrt(mu/p_t^3)*(1+e_t*cos(theta_t))^2
+d2theta_t=-2*(mu/p_t^3)*(e_t*sin(theta_t))*(1+e_t*cos(theta_t))^3
+
 
 r_t=p_t/(1+e_t*cos(theta_t)); % radius from Earth CoM to target
 r_cVec= [r_t;0;0]+rho; % radius from Earth CoM to chaser VECTOR Pontani coordinates
@@ -154,7 +177,7 @@ etaPos=5e-4
 if norm(rho-rho_obs)>=delta_0
     k=0
 else
-    k=1
+    k=0
 end
 
 gradUatt = Ch*(rho-rho_d)/sqrt((norm(rho-rho_d))^2+1)
@@ -253,7 +276,7 @@ Nstar=transpose(P)*([0, -Pdq_r(3), Pdq_r(2); Pdq_r(3), 0, -Pdq_r(1); -Pdq_r(2), 
 
 Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4)-gamma2*satAtt-mdiag*satAtt
 Tcprime = 2*transpose(T)*Tc
-% TOUT=[TOUT, Tcprime]
+% TOUT=[TOUT, Tcprime];
 % TEST=0.5*transpose(P)*Tcprime
 
 
@@ -278,7 +301,7 @@ Tcprime = 2*transpose(T)*Tc
 %% Derivatives
 
 t
-der(1,1)=(n_t*(1+e_t*cos(theta_t))^2)/((1-e_t^2)^(3/2)) % derivative True anamoly 
+der(1,1)=sqrt(mu/p_t^3)*(1+e_t*cos(theta_t))^2 % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
 der(5:8,1)=0.5*G_t*q_t % derivative target attitude
 % if t<150
@@ -286,10 +309,17 @@ der(5:8,1)=0.5*G_t*q_t % derivative target attitude
 % else
 %     der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c) % derivative relative angular velocity 
 % end
-der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity
+der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)%+Ic\Tcprime % derivative relative angular velocity
 der(12:15,1)=0.5*G_c*q_c
 der(16:18,1)=drho
-der(19:21,1)= g/mc%+Fc/mc
+if t<95
+    der(19:21,1)= g/mc%+Fc/mc %% simulation slow after convergence.. attitude converge takes longer though..
+else
+    der(19:21,1)= g/mc
+end
+der(22,1)=dtheta_v
+der(23:25,1)=0 %placeholder
+der(26:28,1)=0 %placeholder
 % der(12:18,1)=derror % derivative error
 % der(19:25,1)=f%+B*u % derivative velocity error
 % der(16:19,1)=dq_r

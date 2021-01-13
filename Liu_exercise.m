@@ -17,23 +17,28 @@ period=2*pi*sqrt(7178160^3/3.986e14)
 
 T_c=period % chaser period [s]
 T_t=period % target period [s]
+T_v=period % virtual period [s]
 e_c=0 % chaser eccentricity [-]
 e_t=0 % target eccentricity [-]
+e_v=0 % virtual eccentricity [-]
 n_c=(2*pi)/T_c % average chaser ang velocity [rad/s]
 n_t=(2*pi)/T_t % average target ang velocity [rad/s]
 
 mu=3.986e14 % gravitational parameter [km^3/sec^2]
 a_c= 7178160 % chaser semimajor axis [m]
 a_t= 7178160 % target semimajor axis [m]
+a_v= 7178160 % virtual semimajor axis [m]
+
 p_c=a_c*(1-e_c^2) % chaser parameter [m]
 p_t=a_t*(1-e_t^2) % target parameter [m]
+p_v=a_v*(1-e_v^2) % target parameter [m]
 
-Ic=[40, -12, 20; % chaser inertial matrix [kg*m^2]
-    -12, 80, 10;
-    20, 10, 50]
-It=[50, 0, 0;
-    0, 70, 0;
-    0, 0, 100] % target inertial matrix [kg*m^2]
+Ic=[40, 0, 0; % chaser inertial matrix [kg*m^2]
+    0, 80, 0;
+    0, 0, 50]
+It=[40, 0, 0; % target inertial matrix [kg*m^2]
+    0, 80, 0;
+    0, 0, 50]
 mc=20 % chaser mass [kg]
 
 
@@ -74,6 +79,7 @@ w_c_0=w_e_0+Act_0*w_t_0
 
 theta_c_0=0 % initial chaser angle [rad]
 theta_t_0=0 % initial target angle [rad]
+theta_v_0=0 % initial virtual angle [rad]
 dtheta_c_0=(n_c*(1+e_c*cos(theta_c_0))^2)/((1-e_c^2)^(3/2)) % initial chaser ang velocity [rad/s]
 dtheta_t_0=(n_t*(1+e_t*cos(theta_t_0))^2)/((1-e_t^2)^(3/2)) % initial target ang velocity [rad/s]
 r_c_0=p_c/(1+e_c*cos(theta_c_0)) %initial chaser distance from earth CoM [m]
@@ -81,6 +87,13 @@ r_t_0=p_t/(1+e_t*cos(theta_t_0)) %initial target distance from earth CoM [m]
 
 rho_0=[-20; 12; -7] % initial relative position
 drho_0=[0.5; -0.7; 1] % initial relative velocity
+
+rho_c_0=[-20; 12; -7] % initial chaser relative position
+drho_c_0=[0.5; -0.7; 1] % initial chaser relative velocity
+
+rho_t_0=[-20; 12; -7] % initial target relative position
+drho_t_0=[0.5; -0.7; 1] % initial target relative velocity
+
 
 beta=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
 p=[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] % sliding parameters Liu
@@ -95,14 +108,13 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 200
-
-tstep =2
+tsim = 100
+tstep =1
 options = 0
 X0=[theta_c_0; dtheta_c_0; theta_t_0; dtheta_t_0; rho_0; drho_0; w_c_0; w_t_0;q_c_0;q_t_0;w_r_0;q_r_0;dq_r_0; error_0; derror_0]
 X0min=[theta_t_0; rho_0; drho_0;w_t_0;q_t_0;w_r_0;q_r_0;dq_r_0]
 X0Error=[theta_t_0;w_t_0;q_t_0;w_r_0;error_0;derror_0]
-X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_0;drho_0]%;q_r_0;dq_r_0]
+X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_0;drho_0;theta_v_0;rho_c_0;drho_c_0]%;q_r_0;dq_r_0]
 % [t,x] = ode45(@integrationLiu,0:tstep:tsim,X0,options,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta)
 % [t,x] = ode45(@integrationLiuMin,0:tstep:tsim,X0min,options,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta)
 % [t,x] = ode45(@integrationLiuError,0:tstep:tsim,X0Error,options,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
@@ -373,7 +385,7 @@ X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_0;drho_0]%;q_r_0;dq_r_0]
 
 %% Plotting integrationLi
 tic
-[t,x] = ode23(@integrationLi,0:tstep:tsim,X0Li,options,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+[t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 timeAll=size(t);
 % error=transpose(x(1:timeAll(1),12:18));
 % derror=transpose(x(1:timeAll(1),19:25));
@@ -458,7 +470,7 @@ etaPos=5e-4
 if norm(rho(1:3,i)-rho_obs)>=delta_0
     k=0
 else
-    k=1
+    k=0
 end
 
 gradUatt = Ch*(rho(1:3,i)-rho_d)/sqrt((norm(rho(1:3,i)-rho_d))^2+1)
