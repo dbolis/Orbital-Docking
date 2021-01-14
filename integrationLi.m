@@ -1,4 +1,4 @@
-function der = integrationLi(t,x,e_v,p_v,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function der = integrationLi(t,x,e_v,p_v,i_v,omega_v,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 theta_t=x(1); % True anamoly 
 w_t=x(2:4); % target ang velocity
 q_t=x(5:8); % target attitude
@@ -33,9 +33,11 @@ d2theta_v=-2*(mu/p_v^3)*(e_v*sin(theta_v))*(1+e_v*cos(theta_v))^3
 %%% Chaser
 
 r_v=p_v/(1+e_v*cos(theta_v)) %% virtual radius from CoM
-r_cVec=[r_v;0;0]+rho_c %% in virtual coordinates
-v_cVec=[sqrt(mu/p_v)*e_v*sin(theta_v)+drho_c(1)-dtheta_v*rho_c(2); sqrt(mu/p_v)*(1+e_v*cos(theta_v))+drho_c(2)+dtheta_v*rho_c(1); drho_c(3)] 
+r_cVec_v=[r_v;0;0]+rho_c %% in virtual coordinates
+v_cVec_v=[sqrt(mu/p_v)*e_v*sin(theta_v)+drho_c(1)-dtheta_v*rho_c(2); sqrt(mu/p_v)*(1+e_v*cos(theta_v))+drho_c(2)+dtheta_v*rho_c(1); drho_c(3)] %% in virtual coordinates
 
+r_cVec_ECI=transpose(r_cVec_v)*ECI2LVLH(theta_v,i_v,omega_v)
+v_cVec_ECI=transpose(v_cVec_v)*ECI2LVLH(theta_v,i_v,omega_v)
 
 
 

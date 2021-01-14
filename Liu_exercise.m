@@ -24,6 +24,10 @@ e_v=0 % virtual eccentricity [-]
 n_c=(2*pi)/T_c % average chaser ang velocity [rad/s]
 n_t=(2*pi)/T_t % average target ang velocity [rad/s]
 
+i_v=0.2
+omega_v=0.1
+
+
 mu=3.986e14 % gravitational parameter [km^3/sec^2]
 a_c= 7178160 % chaser semimajor axis [m]
 a_t= 7178160 % target semimajor axis [m]
@@ -385,7 +389,7 @@ X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_0;drho_0;theta_v_0;rho_c_0;drho_c_0]
 
 %% Plotting integrationLi
 tic
-[t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+[t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 timeAll=size(t);
 % error=transpose(x(1:timeAll(1),12:18));
 % derror=transpose(x(1:timeAll(1),19:25));
