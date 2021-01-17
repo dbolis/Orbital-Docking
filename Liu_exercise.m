@@ -24,10 +24,15 @@ e_v=0 % virtual eccentricity [-]
 n_c=(2*pi)/T_c % average chaser ang velocity [rad/s]
 n_t=(2*pi)/T_t % average target ang velocity [rad/s]
 
-i_v=0.2
-omega_v=0.1
-Re=6.3781e6
-J2=1.083e-3
+i_v=0.2 % inclination of virtual orbit
+omega_v=0.1 % RAAN of virtual orbit
+Re=6.3781e6 % Earth radius
+J2=1.083e-3 % J2 perturbation 
+omega_E=7.2921159e-5 % ang velocity of earth around its axis
+AerS=pi*4^2 % need to add for both chaser and target
+c_D=2.2 % drag coefficient
+
+
 
 mu=3.986e14 % gravitational parameter [km^3/sec^2]
 a_c= 7178160 % chaser semimajor axis [m]
@@ -113,7 +118,7 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 750
+tsim = 130
 tstep =1
 options = 0
 X0=[theta_c_0; dtheta_c_0; theta_t_0; dtheta_t_0; rho_0; drho_0; w_c_0; w_t_0;q_c_0;q_t_0;w_r_0;q_r_0;dq_r_0; error_0; derror_0]
@@ -390,7 +395,7 @@ X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_
 
 %% Plotting integrationLi
 tic
-[t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+[t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 timeAll=size(t);
 % error=transpose(x(1:timeAll(1),12:18));
 % derror=transpose(x(1:timeAll(1),19:25));

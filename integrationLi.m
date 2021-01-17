@@ -1,4 +1,4 @@
-function der = integrationLi(t,x,e_v,p_v,i_v,omega_v,Re,J2,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function der = integrationLi(t,x,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 theta_v=x(1); % True anamoly 
 w_t=x(2:4); % target ang velocity
 q_t=x(5:8); % target attitude
@@ -58,9 +58,34 @@ czeta_c=h_cVers(3)/cos(phi_c)
 
 zeta_c=2*atan(szeta_c/(1+czeta_c)) % heading angle
 
+%%% J2
 fJ2_c_c=3*Re^2*J2*mu/(norm(r_cVec_ECI))^4*[(3*sin(phi_c)^2-1)/2, -sin(phi_c)*cos(phi_c)*sin(zeta_c), -sin(phi_c)*cos(phi_c)*cos(zeta_c)] % J2 disturbance on chaser in chaser frame
 
 fJ2_c_v=fJ2_c_c*ECI2LVLH123(zeta_c, phi_c, lambda_c)*transpose(ECI2LVLH313(theta_v,i_v,omega_v)) % J2 disturbance on chaser in virtual frame
+
+%%% Drag
+v_r_c=sqrt(mu/p_v)*e_v*sin(theta_v)
+v_e_c=sqrt(mu/p_v)*(1+e_v*cos(theta_v))*cos(zeta_c)
+v_n_c=sqrt(mu/p_v)*(1+e_v*cos(theta_v))*sin(zeta_c)
+
+v_r_cVec=[v_r_c, v_e_c-omega_E*norm(r_cVec_ECI)*cos(phi_c) v_n_c]*transpose([1 0, 0; 0 cos(zeta_c) -sin(zeta_c); 0 sin(zeta_c) cos(zeta_c)])
+
+atmDensity_c=1.225*exp(-(norm(r_cVec_ECI)-Re)/10332.6) %% apply better fit.. negligible at 800 km altitude
+
+fDrag_c_c=-0.5*c_D*AerS/mc*atmDensity_c*norm(v_r_cVec)*v_r_cVec % in LVLH chaser frame
+fDrag_c_v=fDrag_c_c*ECI2LVLH123(zeta_c, phi_c, lambda_c)*transpose(ECI2LVLH313(theta_v,i_v,omega_v)) % in LVLH virtual frame
+
+%%% Solar Radiation Pressure
+theta_sol_0=0 % theta_sol at t=0
+theta_sol=theta_sol_0+(2*pi)*(t-0)/31558149.5 % sun position in ECI frame
+ecl_obliq=deg2rad(23.45) % earth obliquity 
+
+r_sunVec=1.495978e11*[cos(theta_sol), cos(ecl_obliq)*sin(theta_sol), sin(ecl_obliq)*sin(theta_sol)]*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
+
+nu=1 % shadow function (implement?)
+P_sr=4.56e-6 % solar radiation pressure
+c_R=1.5 % radiation pressure coefficient
+fSolar_v=-nu*P_sr*AerS*c_R/mc*r_sunVec/norm(r_sunVec) % in virtual coordinates
 
 %%% target
 
@@ -89,13 +114,26 @@ czeta_t=h_tVers(3)/cos(phi_t)
 
 zeta_t=2*atan(szeta_t/(1+czeta_t)) % heading angle
 
+%%J2
 fJ2_t_t=3*Re^2*J2*mu/(norm(r_tVec_ECI))^4*[(3*sin(phi_t)^2-1)/2, -sin(phi_t)*cos(phi_t)*sin(zeta_t), -sin(phi_t)*cos(phi_t)*cos(zeta_t)] % J2 disturbance on target in target frame
 
 fJ2_t_v=fJ2_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v)) % J2 disturbance on target in virtual frame
 
+%%% Drag
+v_r_t=sqrt(mu/p_v)*e_v*sin(theta_v)
+v_e_t=sqrt(mu/p_v)*(1+e_v*cos(theta_v))*cos(zeta_t)
+v_n_t=sqrt(mu/p_v)*(1+e_v*cos(theta_v))*sin(zeta_t)
 
-d_c=transpose(fJ2_c_v)
-d_t=transpose(fJ2_t_v)
+v_r_tVec=[v_r_t, v_e_t-omega_E*norm(r_tVec_ECI)*cos(phi_t) v_n_t]*transpose([1 0, 0; 0 cos(zeta_t) -sin(zeta_t); 0 sin(zeta_t) cos(zeta_t)])
+
+atmDensity_t=1.225*exp(-(norm(r_tVec_ECI)-Re)/10332.6)
+
+fDrag_c_t=-0.5*c_D*AerS/mc*atmDensity_t*norm(v_r_tVec)*v_r_tVec
+fDrag_t_v=fDrag_c_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
+
+
+d_c=transpose(fJ2_c_v)+transpose(fDrag_c_v)+transpose(fSolar_v)
+d_t=transpose(fJ2_t_v)+transpose(fDrag_t_v)+transpose(fSolar_v)
 
 %% Relative Orbit Dynamics
 
