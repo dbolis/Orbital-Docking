@@ -7,11 +7,11 @@ close all % close all graphic windows
 
 % ************************************************ %
 
-global count w_rout TOUT
+global count w_rout TOUT Logic
 count=0
 w_rout=[]
 TOUT=[]
-
+Logic=[]
 
 period=2*pi*sqrt(7178160^3/3.986e14)
 
@@ -43,19 +43,19 @@ p_c=a_c*(1-e_c^2) % chaser parameter [m]
 p_t=a_t*(1-e_t^2) % target parameter [m]
 p_v=a_v*(1-e_v^2) % target parameter [m]
 
-Ic=[40, 0, 0; % chaser inertial matrix [kg*m^2]
-    0, 80, 0;
-    0, 0, 50]
-It=[40, 0, 0; % target inertial matrix [kg*m^2]
-    0, 80, 0;
-    0, 0, 50]
+Ic=[40, -12, 20; % chaser inertial matrix [kg*m^2]
+    -12, 80, 10;
+    20, 10, 50]
+It=[50, 0, 0; % target inertial matrix [kg*m^2]
+    0, 70, 0;
+    0, 0, 100]
 mc=20 % chaser mass [kg]
 
 
 w_c_0=[0;0;0] % initial ang velocity chaser [rad/s]
 w_t_0=[0;0;0] % initial ang velocity target [rad/s]
 
-q_c_0=[1;0;0;0] % initial chaser quaternion
+q_c_0=[0.8;0.3464;0.3464;0.3464] % initial chaser quaternion
 q_t_0=[1;0;0;0]% initial target quaternion
 
 
@@ -79,7 +79,7 @@ q_r_0=quatProd(quatRecip(q_t_0),q_c_0) % Equation 13 Liu
 dq_r_0=0.5*[0, -transpose(w_r_0);
             w_r_0, -w_r_0tilde]*q_r_0 % Equation 14 Liu
 
-dq_r_0vec=[0;0;0]
+dq_r_0vec=[0.05;0.3;-0.1]
         
 T_0=[0, -q_r_0(4), q_r_0(3); q_r_0(4), 0, -q_r_0(2);-q_r_0(3), q_r_0(2), 0] + q_r_0(1)*eye(3)
 
@@ -118,7 +118,7 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 130
+tsim = 140
 tstep =1
 options = 0
 X0=[theta_c_0; dtheta_c_0; theta_t_0; dtheta_t_0; rho_0; drho_0; w_c_0; w_t_0;q_c_0;q_t_0;w_r_0;q_r_0;dq_r_0; error_0; derror_0]
@@ -429,187 +429,190 @@ q_c=transpose(x(1:timeAll(1),12:15));
 % w_c=ones(3,timeAll(1));
 % toc
 q_r=quatProdMat(quatRecipMat(q_t),q_c);
-
-% for i=1:1:size(t)
+logicMat=[]
+for i=1:1:size(t)
+%     
+%    
+%     error=transpose(x(i,12:18))
+%     derror=transpose(x(i,19:25))
+%     q_t=transpose(x(i,5:8))
+%     w_r=transpose(x(i,9:11))
+%     w_t=transpose(x(i,2:4))
+%     
+%     
+%     q_r=error(4:7)+q_d
+%     dq_r(i,1:4)=derror(4:7)
+%     rho_out(i,1:3)=error(1:3)+rho_d
+% 
+% 
+%     q_c=quatProd(q_t,q_r)
+% 
+%     Ac=(q_c(1,i)^2-transpose(q_c(2:4,i))*q_c(2:4,i))*eye(3)+2*(q_c(2:4,i))*transpose(q_c(2:4,i))-2*q_c(1,i)*[0, -q_c(4,i), q_c(3,i);
+%                                                                                             q_c(4,i), 0, -q_c(2,i);
+%                                                                                            -q_c(3,i), q_c(2,i), 0]                   
+%     At=(q_t(1,i)^2-transpose(q_t(2:4,i))*q_t(2:4,i))*eye(3)+2*(q_t(2:4,i))*transpose(q_t(2:4,i))-2*q_t(1,i)*[0, -q_t(4,i), q_t(3,i);
+%                                                                                             q_t(4,i), 0, -q_t(2,i);
+%                                                                                            -q_t(3,i), q_t(2,i), 0]
+%     Ar=(q_r(1,i)^2-transpose(q_r(2:4,i))*q_r(2:4,i))*eye(3)+2*(q_r(2:4,i))*transpose(q_r(2:4,i))-2*q_r(1,i)*[0, -q_r(4,i), q_r(3,i) %EQ 10 Liu
+%                                                                                             q_r(4,i), 0, -q_r(2,i)
+%                                                                                             -q_r(3,i), q_r(2,i), 0]                                                                                                       
+%                                                                                        
+% %     Act=Ac*At
+% %     Act=Ar
 % %     
-% %    
-% %     error=transpose(x(i,12:18))
-% %     derror=transpose(x(i,19:25))
-% %     q_t=transpose(x(i,5:8))
-% %     w_r=transpose(x(i,9:11))
-% %     w_t=transpose(x(i,2:4))
-% %     
-% %     
-% %     q_r=error(4:7)+q_d
-% %     dq_r(i,1:4)=derror(4:7)
-% %     rho_out(i,1:3)=error(1:3)+rho_d
-% % 
-% % 
-% %     q_c=quatProd(q_t,q_r)
-% % 
-% %     Ac=(q_c(1,i)^2-transpose(q_c(2:4,i))*q_c(2:4,i))*eye(3)+2*(q_c(2:4,i))*transpose(q_c(2:4,i))-2*q_c(1,i)*[0, -q_c(4,i), q_c(3,i);
-% %                                                                                             q_c(4,i), 0, -q_c(2,i);
-% %                                                                                            -q_c(3,i), q_c(2,i), 0]                   
-% %     At=(q_t(1,i)^2-transpose(q_t(2:4,i))*q_t(2:4,i))*eye(3)+2*(q_t(2:4,i))*transpose(q_t(2:4,i))-2*q_t(1,i)*[0, -q_t(4,i), q_t(3,i);
-% %                                                                                             q_t(4,i), 0, -q_t(2,i);
-% %                                                                                            -q_t(3,i), q_t(2,i), 0]
-% %     Ar=(q_r(1,i)^2-transpose(q_r(2:4,i))*q_r(2:4,i))*eye(3)+2*(q_r(2:4,i))*transpose(q_r(2:4,i))-2*q_r(1,i)*[0, -q_r(4,i), q_r(3,i) %EQ 10 Liu
-% %                                                                                             q_r(4,i), 0, -q_r(2,i)
-% %                                                                                             -q_r(3,i), q_r(2,i), 0]                                                                                                       
-% %                                                                                        
-% % %     Act=Ac*At
-% % %     Act=Ar
+%     w_r(1:3,i)=w_c(:,i)-Ar*w_t(:,i);
 % % %     
-% %     w_r(1:3,i)=w_c(:,i)-Ar*w_t(:,i);
-% % % %     
-% %     
-% %     q_r_out2(1:4,i)=q_r
-% %     q_t_out2(1:4,i)=q_t
-% %     q_c_out2(1:4,i)=q_c
-% 
 %     
-% %     Eulersq_r(1:3,i)=quat2euler(q_r_test(1,i),q_r_test(2,i),q_r_test(3,i),q_r_test(4,i))
-% %     Eulersq_c(1:3,i)=quat2euler(q_c(1,i),q_c(2,i),q_c(3,i),q_c(4,i))
-% %     Eulersq_t(1:3,i)=quat2euler(q_t(1,i),q_t(2,i),q_t(3,i),q_t(4,i))
-% 
-% % Relative position
-% Ch=0.5
-% rho_obs=rho_d
-% d_0=1.9
-% delta_0=2
-% alpha=0.5
-% etaPos=5e-4
-% 
-% 
-% if norm(rho(1:3,i)-rho_obs)>=delta_0
-%     k=0
-% else
-%     k=0
-% end
-% 
-% gradUatt = Ch*(rho(1:3,i)-rho_d)/sqrt((norm(rho(1:3,i)-rho_d))^2+1)
-% 
-% gradUrep = 4*k*(rho(1:3,i)-rho_obs)*((norm(rho(1:3,i)-rho_obs))^2-delta_0^2)/((norm(rho(1:3,i)-rho_obs))^2-d_0^2)^3
-% 
-% sRel=drho(1:3,i)+alpha*(gradUatt+gradUrep)
-% sRelout(1:3,i)=sRel
-% 
-% if abs(sRel(1))>=etaPos
-%     s1Pos=tanh(sRel(1))
-% else
-%     s1Pos=sRel(1)/etaPos
-% end
-% 
-% if abs(sRel(2))>=etaPos
-%     s2Pos=tanh(sRel(2))
-% else
-%     s2Pos=sRel(2)/etaPos
-% end
-% 
-% if abs(sRel(3))>=etaPos
-%     s3Pos=tanh(sRel(3))
-% else
-%     s3Pos=sRel(3)/etaPos
-% end
-% 
-% satPos=[s1Pos; s2Pos; s3Pos]
-% 
-% 
-% grad2Uatt=Ch*(((norm(rho(1:3,i)-rho_d))^2+1)*eye(3)-(rho(1:3,i)-rho_d)*transpose(rho(1:3,i)-rho_d))/((norm(rho(1:3,i)-rho_d))^2+1)^(3/2)
-% 
-% 
-% 
-% 
-% 
-% gamma1=0.02 ;
-% gamma2=0.005;
-% gamma3=0.05;
-% pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
-% mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
-% % spos=drho; % s position control, excluding APF term  Eq 20 Li
-% % satt=derror(2:4); % s att control, excluding APF term Eq 36 
-% 
-% Fc(1:3,i)=-mc*alpha*grad2Uatt*drho(1:3,i)-(gamma1+mc*gamma3)*satPos-pdiag*satPos;  %Eq 27 Li excluding APF terms
-% 
-% Ar=(q_r(1,i)^2-transpose(q_r(2:4,i))*q_r(2:4,i))*eye(3)+2*(q_r(2:4,i))*transpose(q_r(2:4,i))-2*q_r(1,i)*[0, -q_r(4,i), q_r(3,i); %EQ 10 Liu
-%                                                                                             q_r(4,i), 0, -q_r(2,i);
-%                                                                                             -q_r(3,i), q_r(2,i), 0]; 
-% 
-% w_r=w_c(1:3,i)-Ar*w_t(1:3,i);
-% w_rOut(1:3,i)=w_r;
-% 
-% w_r_tilde = [0, -w_r(3), w_r(2); %EQ 12 Liu
-%              w_r(3), 0, -w_r(1);
-%               -w_r(2), w_r(1), 0];
-%           
-% G_r=[0, -transpose(w_r);
-%     w_r, -w_r_tilde];
-% 
-% dq_r=0.5*G_r*q_r(1:4,i);
-% 
-% 
-% gamma1=0.02 ;
-% gamma2=0.005;
-% gamma3=0.05;
-% pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
-% mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
-% 
-% Chrel=0.3;
-% etaAtt=5e-4
-% beta=0.5;
-% gradUquat=Chrel*(q_r(2:4,i)-[0;0;0])/sqrt((norm(q_r(2:4,i)-[0;0;0]))^2+1);
-% 
-% sAtt=dq_r(2:4)+beta*gradUquat
-% sAttout(1:3,i)=sAtt
-% 
-% if abs(sAtt(1))>=etaAtt
-%     s1Att=sign(sAtt(1))
-% else
-%     s1Att=sAtt(1)/etaAtt
-%     
-% end
-% 
-% if abs(sAtt(2))>=etaAtt
-%     s2Att=sign(sAtt(2))
-% else
-%     s2Att=sAtt(2)/etaAtt
-% end
-% 
-% if abs(sAtt(3))>=etaAtt
-%     s3Att=sign(sAtt(3))
-% else
-%     s3Att=sAtt(3)/etaAtt
-% end
-% 
-% satAtt=[s1Att; s2Att; s3Att]
-% 
-% grad2Uquat=Chrel*(((norm(q_r(2:4,i)-[0;0;0]))^2+1)*eye(3)-(q_r(2:4,i)-[0;0;0])*transpose(q_r(2:4,i)-[0;0;0]))/((norm(q_r(2:4,i)-[0;0;0]))^2+1)^(3/2);
-% 
-% T=[0, -q_r(4,i), q_r(3,i); q_r(4,i), 0, -q_r(2,i);-q_r(3,i), q_r(2,i), 0] + q_r(1,i)*eye(3);
-% dT=[0, -dq_r(4), dq_r(3); dq_r(4), 0, -dq_r(2);-dq_r(3), dq_r(2), 0] + dq_r(1)*eye(3);
-% P=inv(T);
-% dP=inv(dT);
-% Istar=transpose(P)*Ic*P;
-% 
-% IcPdq_r=Ic*P*dq_r(2:4);
-% Pdq_r=P*dq_r(2:4);
-% Arw_t=Ar*w_t(1:3,i);
-% twoPdq_r=2*P*dq_r(2:4);
-% w_t_tilde = [0, -w_t(3,i), w_t(2,i); %EQ 8 Liu
-%              w_t(3,i), 0, -w_t(1,i);
-%               -w_t(2,i), w_t(1,i), 0];
-% dw_t=It\(-w_t_tilde*It*w_t(1:3,i));
-% 
-% Cstar=-Istar/dP*P-2*transpose(P)*[0, -IcPdq_r(3), IcPdq_r(2); IcPdq_r(3), 0, -IcPdq_r(1); -IcPdq_r(2), IcPdq_r(1), 0]*P;
-% Nstar=transpose(P)*([0, -Pdq_r(3), Pdq_r(2); Pdq_r(3), 0, -Pdq_r(1); -Pdq_r(2), Pdq_r(1), 0]*...
-%     Ic*Ar*w_t(1:3,i))+transpose(P)*([0, -Arw_t(3), Arw_t(2); Arw_t(3), 0, -Arw_t(1);-Arw_t(2), Arw_t(1), 0]*Ic*P*dq_r(2:4))+...
-%     0.5*transpose(P)*([0, -Arw_t(3), Arw_t(2); Arw_t(3), 0, -Arw_t(1); -Arw_t(2), Arw_t(1), 0]*Ic*Ar*w_t(1:3,i))-...
-%     0.5*transpose(P)*Ic*([0, -twoPdq_r(3), twoPdq_r(2); twoPdq_r(3), 0, -twoPdq_r(1);-twoPdq_r(2), twoPdq_r(1), 0]*Ar*w_t(1:3,i)-Ar*dw_t);
-% 
-% Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4)-gamma2*sign(satAtt)-mdiag*sign(satAtt);
-% Tcprime(1:3,i) = 2*transpose(T)*Tc;
-% Tcout(1:3,i)=Tc
-% end
+%     q_r_out2(1:4,i)=q_r
+%     q_t_out2(1:4,i)=q_t
+%     q_c_out2(1:4,i)=q_c
+
+    
+%     Eulersq_r(1:3,i)=quat2euler(q_r_test(1,i),q_r_test(2,i),q_r_test(3,i),q_r_test(4,i))
+%     Eulersq_c(1:3,i)=quat2euler(q_c(1,i),q_c(2,i),q_c(3,i),q_c(4,i))
+%     Eulersq_t(1:3,i)=quat2euler(q_t(1,i),q_t(2,i),q_t(3,i),q_t(4,i))
+
+% Relative position
+Ch=0.5
+rho_obs=rho_d
+d_0=1.9
+delta_0=2
+alpha=0.5
+etaPos=5e-4
+
+
+if norm(rho(1:3,i)-rho_obs)>=delta_0
+    k=0
+else
+    k=0
+end
+
+gradUatt = Ch*(rho(1:3,i)-rho_d)/sqrt((norm(rho(1:3,i)-rho_d))^2+1)
+
+gradUrep = 4*k*(rho(1:3,i)-rho_obs)*((norm(rho(1:3,i)-rho_obs))^2-delta_0^2)/((norm(rho(1:3,i)-rho_obs))^2-d_0^2)^3
+
+sRel=drho(1:3,i)+alpha*(gradUatt+gradUrep)
+sRelout(1:3,i)=sRel
+
+if abs(sRel(1))>=etaPos
+    s1Pos=tanh(sRel(1))
+else
+    s1Pos=sRel(1)/etaPos
+end
+
+if abs(sRel(2))>=etaPos
+    s2Pos=tanh(sRel(2))
+else
+    s2Pos=sRel(2)/etaPos
+end
+
+if abs(sRel(3))>=etaPos
+    s3Pos=tanh(sRel(3))
+else
+    s3Pos=sRel(3)/etaPos
+end
+
+satPos=[s1Pos; s2Pos; s3Pos]
+
+
+grad2Uatt=Ch*(((norm(rho(1:3,i)-rho_d))^2+1)*eye(3)-(rho(1:3,i)-rho_d)*transpose(rho(1:3,i)-rho_d))/((norm(rho(1:3,i)-rho_d))^2+1)^(3/2)
+
+
+
+
+
+gamma1=0.02 ;
+gamma2=0.005;
+gamma3=0.05;
+pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
+mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
+% spos=drho; % s position control, excluding APF term  Eq 20 Li
+% satt=derror(2:4); % s att control, excluding APF term Eq 36 
+Fclog=-mc*alpha*grad2Uatt*drho(1:3,i)-(gamma1+mc*gamma3)*satPos-pdiag*satPos;
+Fc(1:3,i)=-mc*alpha*grad2Uatt*drho(1:3,i)-(gamma1+mc*gamma3)*satPos-pdiag*satPos;  %Eq 27 Li excluding APF terms
+
+Ar=(q_r(1,i)^2-transpose(q_r(2:4,i))*q_r(2:4,i))*eye(3)+2*(q_r(2:4,i))*transpose(q_r(2:4,i))-2*q_r(1,i)*[0, -q_r(4,i), q_r(3,i); %EQ 10 Liu
+                                                                                            q_r(4,i), 0, -q_r(2,i);
+                                                                                            -q_r(3,i), q_r(2,i), 0]; 
+
+w_r=w_c(1:3,i)-Ar*w_t(1:3,i);
+w_rOut(1:3,i)=w_r;
+
+w_r_tilde = [0, -w_r(3), w_r(2); %EQ 12 Liu
+             w_r(3), 0, -w_r(1);
+              -w_r(2), w_r(1), 0];
+          
+G_r=[0, -transpose(w_r);
+    w_r, -w_r_tilde];
+
+dq_r=0.5*G_r*q_r(1:4,i);
+
+
+gamma1=0.02 ;
+gamma2=0.005;
+gamma3=0.05;
+pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
+mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
+
+Chrel=0.3;
+etaAtt=5e-4
+beta=0.5;
+gradUquat=Chrel*(q_r(2:4,i)-[0;0;0])/sqrt((norm(q_r(2:4,i)-[0;0;0]))^2+1);
+
+sAtt=dq_r(2:4)+beta*gradUquat
+sAttout(1:3,i)=sAtt
+
+if abs(sAtt(1))>=etaAtt
+    s1Att=sign(sAtt(1))
+else
+    s1Att=sAtt(1)/etaAtt
+    
+end
+
+if abs(sAtt(2))>=etaAtt
+    s2Att=sign(sAtt(2))
+else
+    s2Att=sAtt(2)/etaAtt
+end
+
+if abs(sAtt(3))>=etaAtt
+    s3Att=sign(sAtt(3))
+else
+    s3Att=sAtt(3)/etaAtt
+end
+
+satAtt=[s1Att; s2Att; s3Att]
+
+grad2Uquat=Chrel*(((norm(q_r(2:4,i)-[0;0;0]))^2+1)*eye(3)-(q_r(2:4,i)-[0;0;0])*transpose(q_r(2:4,i)-[0;0;0]))/((norm(q_r(2:4,i)-[0;0;0]))^2+1)^(3/2);
+
+T=[0, -q_r(4,i), q_r(3,i); q_r(4,i), 0, -q_r(2,i);-q_r(3,i), q_r(2,i), 0] + q_r(1,i)*eye(3);
+dT=[0, -dq_r(4), dq_r(3); dq_r(4), 0, -dq_r(2);-dq_r(3), dq_r(2), 0] + dq_r(1)*eye(3);
+P=inv(T);
+dP=inv(dT);
+Istar=transpose(P)*Ic*P;
+
+IcPdq_r=Ic*P*dq_r(2:4);
+Pdq_r=P*dq_r(2:4);
+Arw_t=Ar*w_t(1:3,i);
+twoPdq_r=2*P*dq_r(2:4);
+w_t_tilde = [0, -w_t(3,i), w_t(2,i); %EQ 8 Liu
+             w_t(3,i), 0, -w_t(1,i);
+              -w_t(2,i), w_t(1,i), 0];
+dw_t=It\(-w_t_tilde*It*w_t(1:3,i));
+
+Cstar=-Istar/dP*P-2*transpose(P)*[0, -IcPdq_r(3), IcPdq_r(2); IcPdq_r(3), 0, -IcPdq_r(1); -IcPdq_r(2), IcPdq_r(1), 0]*P;
+Nstar=transpose(P)*([0, -Pdq_r(3), Pdq_r(2); Pdq_r(3), 0, -Pdq_r(1); -Pdq_r(2), Pdq_r(1), 0]*...
+    Ic*Ar*w_t(1:3,i))+transpose(P)*([0, -Arw_t(3), Arw_t(2); Arw_t(3), 0, -Arw_t(1);-Arw_t(2), Arw_t(1), 0]*Ic*P*dq_r(2:4))+...
+    0.5*transpose(P)*([0, -Arw_t(3), Arw_t(2); Arw_t(3), 0, -Arw_t(1); -Arw_t(2), Arw_t(1), 0]*Ic*Ar*w_t(1:3,i))-...
+    0.5*transpose(P)*Ic*([0, -twoPdq_r(3), twoPdq_r(2); twoPdq_r(3), 0, -twoPdq_r(1);-twoPdq_r(2), twoPdq_r(1), 0]*Ar*w_t(1:3,i)-Ar*dw_t);
+
+Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4)-gamma2*satAtt-mdiag*satAtt;
+Tcprimelog = 2*transpose(T)*Tc
+Tcprime(1:3,i) = 2*transpose(T)*Tc;
+Tcout(1:3,i)=Tc
+
+logicMat=[logicMat, thrusterLogic(transpose(Fclog),transpose(Tcprimelog),q_c(1:4,i), x(i,1), i_v, omega_v)]
+end
 time2=toc
 
 
@@ -702,12 +705,12 @@ legend;
 
 
 
-% figure;
-% plot(t,Fc);
-% title("Fc");
-% xlabel("time [s]")
-% ylabel("thrust [N]")
-% legend;
+figure;
+plot(t,Fc);
+title("Fc");
+xlabel("time [s]")
+ylabel("thrust [N]")
+legend;
 
 % figure;
 % plot(t,sRelout);
@@ -741,18 +744,18 @@ legend;
 % title("q_r")
 % legend
 % 
-% figure;
-% plot(t,q_r);
-% title("q_r");
-% xlabel("time [s]")
-% legend;
+figure;
+plot(t,q_r);
+title("q_r");
+xlabel("time [s]")
+legend;
 
-% figure;
-% plot(t,Tcprime);
-% title("Tcprime");
-% xlabel("time [s]")
-% ylabel("Torque [Nm]")
-% legend;
+figure;
+plot(t,Tcprime);
+title("Tcprime");
+xlabel("time [s]")
+ylabel("Torque [Nm]")
+legend;
 % 
 % figure;
 % plot(t,sAttout);

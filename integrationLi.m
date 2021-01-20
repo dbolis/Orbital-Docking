@@ -22,7 +22,7 @@ drho=drho_c-drho_t
 % drho=derror(1:3)+drho_d; % relative velocity
 
 
-global count w_rout TOUT
+global count w_rout TOUT Logic
 count=count+1
 
 
@@ -175,7 +175,7 @@ dX_c=drho_c(1);
 dY_c=drho_c(2);
 dZ_c=drho_c(3);
 
-Q_c=((norm(rho_c))^2+2*transpose([r_v;0;0])*rho_c)/r_v^2; % EQ 13 Pontani
+Q_c=((norm(rho_c))^2+2*transpose([r_v;0;0])*rho_c)/r_v^2 % EQ 13 Pontani
 
 d2X_c= (mu/r_v^2)*(Q_c*(2+Q_c+(1+Q_c)^0.5))/((1+Q_c)^(3/2)*((1+Q_c)^0.5+1))-mu*X_c/((norm(r_cVec_v))^3)+d2theta_v*Y_c+2*dtheta_v*dY_c+dtheta_v^2*X_c; %EQ 16 Pontani
 d2Y_c= -mu*Y_c/((norm(r_cVec_v))^3)-d2theta_v*X_c-2*dtheta_v*dX_c+dtheta_v^2*Y_c; %EQ 17 Pontani
@@ -415,7 +415,7 @@ Tcprime = 2*transpose(T)*Tc
 % 
 
 
-
+% Logic=[Logic, thrusterLogic(transpose(Fc),transpose(Tcprime),q_c,theta_v, i_v, omega_v)]
 %% Derivatives
 
 t
@@ -427,7 +427,7 @@ der(5:8,1)=0.5*G_t*q_t % derivative target attitude
 % else
 %     der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c) % derivative relative angular velocity 
 % end
-der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)%+Ic\Tcprime % derivative relative angular velocity
+der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity
 der(12:15,1)=0.5*G_c*q_c
 der(16:18,1)=drho_c
 % if t<95
