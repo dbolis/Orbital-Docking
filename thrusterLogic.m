@@ -56,27 +56,27 @@ thrustVals=[0;
 % end
 
 if force_c(1)>0
-    thrustVals(1)= force_c(1)/2
-    thrustVals(2)= force_c(1)/2
+    thrustVals(3)= force_c(1)/2
+    thrustVals(4)= force_c(1)/2
 else
-    thrustVals(3)= abs(force_c(1)/2)
-    thrustVals(4)= abs(force_c(1)/2)
+    thrustVals(1)= abs(force_c(1)/2)
+    thrustVals(2)= abs(force_c(1)/2)
 end
 
 if force_c(2)>0
-    thrustVals(5)= force_c(2)/2
-    thrustVals(6)= force_c(2)/2
+    thrustVals(7)= force_c(2)/2
+    thrustVals(8)= force_c(2)/2
 else
-    thrustVals(7)= abs(force_c(2)/2)
-    thrustVals(8)= abs(force_c(2)/2)
+    thrustVals(5)= abs(force_c(2)/2)
+    thrustVals(6)= abs(force_c(2)/2)
 end
          
 if force_c(3)>0
-    thrustVals(9)= force_c(3)/2
-    thrustVals(10)= force_c(3)/2
+    thrustVals(11)= force_c(3)/2
+    thrustVals(12)= force_c(3)/2
 else
-    thrustVals(11)= abs(force_c(3)/2)
-    thrustVals(12)= abs(force_c(3)/2)
+    thrustVals(9)= abs(force_c(3)/2)
+    thrustVals(10)= abs(force_c(3)/2)
 end
 
     

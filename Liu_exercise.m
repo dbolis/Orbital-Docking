@@ -7,11 +7,12 @@ close all % close all graphic windows
 
 % ************************************************ %
 
-global count w_rout TOUT Logic
+global count w_rout TOUT Logic outt
 count=0
 w_rout=[]
 TOUT=[]
 Logic=[]
+outt=[]
 
 period=2*pi*sqrt(7178160^3/3.986e14)
 
@@ -53,7 +54,7 @@ mc=20 % chaser mass [kg]
 
 
 w_c_0=[0;0;0] % initial ang velocity chaser [rad/s]
-w_t_0=[0;0;0] % initial ang velocity target [rad/s]
+w_t_0=[0.05;-0.06;0.02] % initial ang velocity target [rad/s]
 
 q_c_0=[0.8;0.3464;0.3464;0.3464] % initial chaser quaternion
 q_t_0=[1;0;0;0]% initial target quaternion
@@ -101,7 +102,7 @@ drho_0=[0; 0; 0] % initial relative velocity
 rho_c_0=[-20; 12; -7] % initial chaser relative position
 drho_c_0=[0.5; -0.7; 1] % initial chaser relative velocity
 
-rho_t_0=[0; 0; 0] % initial target relative position
+rho_t_0=[1; 0; 0] % initial target relative position (if at 0;0;0 get imaginary number)
 drho_t_0=[0; 0; 0] % initial target relative velocity
 
 
@@ -118,8 +119,8 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 140
-tstep =1
+tsim = 50
+tstep = 1
 options = 0
 X0=[theta_c_0; dtheta_c_0; theta_t_0; dtheta_t_0; rho_0; drho_0; w_c_0; w_t_0;q_c_0;q_t_0;w_r_0;q_r_0;dq_r_0; error_0; derror_0]
 X0min=[theta_t_0; rho_0; drho_0;w_t_0;q_t_0;w_r_0;q_r_0;dq_r_0]
@@ -395,7 +396,7 @@ X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_
 
 %% Plotting integrationLi
 tic
-[t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+[t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 timeAll=size(t);
 % error=transpose(x(1:timeAll(1),12:18));
 % derror=transpose(x(1:timeAll(1),19:25));

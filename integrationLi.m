@@ -1,4 +1,4 @@
-function der = integrationLi(t,x,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function der = integrationLi(t,x,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 theta_v=x(1); % True anamoly 
 w_t=x(2:4); % target ang velocity
 q_t=x(5:8); % target attitude
@@ -22,7 +22,7 @@ drho=drho_c-drho_t
 % drho=derror(1:3)+drho_d; % relative velocity
 
 
-global count w_rout TOUT Logic
+global count w_rout TOUT Logic outt
 count=count+1
 
 
@@ -64,9 +64,21 @@ fJ2_c_c=3*Re^2*J2*mu/(norm(r_cVec_ECI))^4*[(3*sin(phi_c)^2-1)/2, -sin(phi_c)*cos
 fJ2_c_v=fJ2_c_c*ECI2LVLH123(zeta_c, phi_c, lambda_c)*transpose(ECI2LVLH313(theta_v,i_v,omega_v)) % J2 disturbance on chaser in virtual frame
 
 %%% Drag
-v_r_c=sqrt(mu/p_v)*e_v*sin(theta_v)
-v_e_c=sqrt(mu/p_v)*(1+e_v*cos(theta_v))*cos(zeta_c)
-v_n_c=sqrt(mu/p_v)*(1+e_v*cos(theta_v))*sin(zeta_c)
+
+a_c=mu/((2*mu/norm(r_cVec_ECI))-norm(v_cVec_ECI)^2)
+e_c=sqrt(1-(norm(h_cVec)^2/(mu*a_c)))
+v_radial_c=dot(v_cVec_ECI,r_cVec_ECI)/norm(r_cVec_ECI)
+p_c=a_c*(1-e_c^2)
+
+cThetaStar_c=1/e_c*(p_c/norm(r_cVec_ECI)-1)
+sThetaStar_c=v_radial_c/e_c*sqrt(p_c/mu)
+
+theta_c=2*atan(sThetaStar_c/(1+cThetaStar_c))
+
+
+v_r_c=sqrt(mu/p_c)*e_c*sin(theta_c)
+v_e_c=sqrt(mu/p_c)*(1+e_c*cos(theta_c))*cos(zeta_c)
+v_n_c=sqrt(mu/p_c)*(1+e_c*cos(theta_c))*sin(zeta_c)
 
 v_r_cVec=[v_r_c, v_e_c-omega_E*norm(r_cVec_ECI)*cos(phi_c) v_n_c]*transpose([1 0, 0; 0 cos(zeta_c) -sin(zeta_c); 0 sin(zeta_c) cos(zeta_c)])
 
@@ -80,12 +92,18 @@ theta_sol_0=0 % theta_sol at t=0
 theta_sol=theta_sol_0+(2*pi)*(t-0)/31558149.5 % sun position in ECI frame
 ecl_obliq=deg2rad(23.45) % earth obliquity 
 
-r_sunVec=1.495978e11*[cos(theta_sol), cos(ecl_obliq)*sin(theta_sol), sin(ecl_obliq)*sin(theta_sol)]*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
+i_c=acos(h_cVers(3))
+somega_c=h_cVers(1)/sin(i_c)
+comega_c=-h_cVers(2)/sin(i_c)
+omega_c=2*atan(somega_c/(1+comega_c))
 
-nu=1 % shadow function (implement?)
+r_sunVec_c=1.495978e11*[cos(theta_sol), cos(ecl_obliq)*sin(theta_sol), sin(ecl_obliq)*sin(theta_sol)]*transpose(ECI2LVLH313(theta_c,i_c,omega_c))
+
+nu=1 % shadow function 
 P_sr=4.56e-6 % solar radiation pressure
-c_R=1.5 % radiation pressure coefficient
-fSolar_v=-nu*P_sr*AerS*c_R/mc*r_sunVec/norm(r_sunVec) % in virtual coordinates
+c_R_c=1.5 % radiation pressure coefficient
+fSolar_c_c=-nu*P_sr*AerS*c_R_c/mc*r_sunVec_c/norm(r_sunVec_c)
+fSolar_c_v=fSolar_c_c*ECI2LVLH123(zeta_c, phi_c, lambda_c)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
 
 %%% target
 
@@ -120,20 +138,45 @@ fJ2_t_t=3*Re^2*J2*mu/(norm(r_tVec_ECI))^4*[(3*sin(phi_t)^2-1)/2, -sin(phi_t)*cos
 fJ2_t_v=fJ2_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v)) % J2 disturbance on target in virtual frame
 
 %%% Drag
-v_r_t=sqrt(mu/p_v)*e_v*sin(theta_v)
-v_e_t=sqrt(mu/p_v)*(1+e_v*cos(theta_v))*cos(zeta_t)
-v_n_t=sqrt(mu/p_v)*(1+e_v*cos(theta_v))*sin(zeta_t)
+a_t=mu/((2*mu/norm(r_tVec_ECI))-norm(v_tVec_ECI)^2)
+e_t=sqrt(1-(norm(h_tVec)^2/(mu*a_t)))
+v_radial_t=dot(v_tVec_ECI,r_tVec_ECI)/norm(r_tVec_ECI)
+p_t=a_t*(1-e_t^2)
+
+cThetaStar_t=1/e_t*(p_t/norm(r_tVec_ECI)-1)
+sThetaStar_t=v_radial_t/e_t*sqrt(p_t/mu)
+
+theta_t=2*atan(sThetaStar_t/(1+cThetaStar_t))
+
+v_r_t=sqrt(mu/p_t)*e_t*sin(theta_t)
+v_e_t=sqrt(mu/p_t)*(1+e_t*cos(theta_t))*cos(zeta_t)
+v_n_t=sqrt(mu/p_t)*(1+e_t*cos(theta_t))*sin(zeta_t)
 
 v_r_tVec=[v_r_t, v_e_t-omega_E*norm(r_tVec_ECI)*cos(phi_t) v_n_t]*transpose([1 0, 0; 0 cos(zeta_t) -sin(zeta_t); 0 sin(zeta_t) cos(zeta_t)])
 
 atmDensity_t=1.225*exp(-(norm(r_tVec_ECI)-Re)/10332.6)
 
-fDrag_c_t=-0.5*c_D*AerS/mc*atmDensity_t*norm(v_r_tVec)*v_r_tVec
-fDrag_t_v=fDrag_c_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
+fDrag_t_t=-0.5*c_D*AerS/mc*atmDensity_t*norm(v_r_tVec)*v_r_tVec
+fDrag_t_v=fDrag_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
+%outt=[outt, [fDrag_t_t;fDrag_t_v;v_r_tVec]] 
+% outt=[outt, e_t]
 
+%%% Solar Radiation Pressure
+i_t=acos(h_tVers(3))
+somega_t=h_tVers(1)/sin(i_t)
+comega_t=-h_tVers(2)/sin(i_t)
+omega_t=2*atan(somega_t/(1+comega_t))
 
-d_c=transpose(fJ2_c_v)+transpose(fDrag_c_v)+transpose(fSolar_v)
-d_t=transpose(fJ2_t_v)+transpose(fDrag_t_v)+transpose(fSolar_v)
+r_sunVec_t=1.495978e11*[cos(theta_sol), cos(ecl_obliq)*sin(theta_sol), sin(ecl_obliq)*sin(theta_sol)]*transpose(ECI2LVLH313(theta_t,i_t,omega_t))
+
+% nu=1 % shadow function 
+% P_sr=4.56e-6 % solar radiation pressure
+c_R_t=1.5 % radiation pressure coefficient
+fSolar_t_t=-nu*P_sr*AerS*c_R_t/mc*r_sunVec_t/norm(r_sunVec_t) 
+fSolar_t_v=fSolar_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
+
+d_c=transpose(fJ2_c_v)+transpose(fDrag_c_v)+transpose(fSolar_c_v)
+d_t=transpose(fJ2_t_v)+transpose(fDrag_t_v)+transpose(fSolar_t_v)
 
 %% Relative Orbit Dynamics
 
