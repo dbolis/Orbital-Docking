@@ -459,6 +459,8 @@ Tcprime = 2*transpose(T)*Tc
 
 
 % Logic=[Logic, thrusterLogic(transpose(Fc),transpose(Tcprime),q_c,theta_v, i_v, omega_v)]
+
+
 %% Derivatives
 
 t

@@ -431,6 +431,8 @@ q_c=transpose(x(1:timeAll(1),12:15));
 % toc
 q_r=quatProdMat(quatRecipMat(q_t),q_c);
 logicMat=[]
+logicMat2=[]
+logicMatOptimized=[]
 for i=1:1:size(t)
 %     
 %    
@@ -612,7 +614,9 @@ Tcprimelog = 2*transpose(T)*Tc
 Tcprime(1:3,i) = 2*transpose(T)*Tc;
 Tcout(1:3,i)=Tc
 
-logicMat=[logicMat, thrusterLogic(transpose(Fclog),transpose(Tcprimelog),q_c(1:4,i), x(i,1), i_v, omega_v)]
+logicMat=[logicMat, thrusterLogic(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
+logicMat2=[logicMat2, thrusterLogic2(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
+logicMatOptimized=[logicMatOptimized, thrusterLogicOptimized(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
 end
 time2=toc
 
@@ -702,8 +706,6 @@ title("norm(t)");
 xlabel("time [s]")
 ylabel("velocity [m/s]")
 legend;
-
-
 
 
 figure;
