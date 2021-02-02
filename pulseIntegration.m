@@ -1,4 +1,5 @@
-function der = integrationLi(t,x,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function der = pulseIntegration(t,x,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+
 theta_v=x(1); % True anamoly 
 w_t=x(2:4); % target ang velocity
 q_t=x(5:8); % target attitude
@@ -8,23 +9,8 @@ rho_c=x(16:18)
 drho_c=x(19:21)
 rho_t=x(22:24)
 drho_t=x(25:27)
-
 rho=rho_c-rho_t
 drho=drho_c-drho_t
-
-% error=x(12:18); % error
-% derror=x(19:25); % velocity error
-% q_r=x(16:19)
-% dq_r=x(20:23)
-% q_r=error(4:7)+q_d; % relative attitude 
-% dq_r=derror(4:7); % relative ang rate
-% rho=error(1:3)+rho_d; % relative position
-% drho=derror(1:3)+drho_d; % relative velocity
-
-
-global count w_rout TOUT Logic outt
-count=count+1
-
 
 
 %% Dynamics with Perterbances
@@ -178,35 +164,6 @@ fSolar_t_v=fSolar_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313
 d_c=transpose(fJ2_c_v)+transpose(fDrag_c_v)+transpose(fSolar_c_v)
 d_t=transpose(fJ2_t_v)+transpose(fDrag_t_v)+transpose(fSolar_t_v)
 
-%% Relative Orbit Dynamics
-
-% dtheta_t=(n_t*(1+e_t*cos(theta_t))^2)/((1-e_t^2)^(3/2)); % target orbital velocity
-% d2theta_t=(-2*n_t^2*e_t*sin(theta_t)*(1+e_t*cos(theta_t))^3)/((1-e_t^2)^3); % target orbital acceleration
-
-% dtheta_t=sqrt(mu/p_t^3)*(1+e_t*cos(theta_t))^2
-% d2theta_t=-2*(mu/p_t^3)*(e_t*sin(theta_t))*(1+e_t*cos(theta_t))^3
-% 
-% 
-% r_t=p_t/(1+e_t*cos(theta_t)); % radius from Earth CoM to target
-% r_cVec= [r_t;0;0]+rho; % radius from Earth CoM to chaser VECTOR Pontani coordinates
-% % r_cVec= [0;0;r_t]+rho % radius from Earth CoM to chaser VECTOR Liu coordinates
-% r_c= norm(r_cVec); % % radius from Earth CoM to chaser scalar
-
-
-
-%% Liu coordinates
-% A1=[dtheta_t^2, 0, d2theta_t;  % Matrices EQ 4 Liu
-%     0, 0, 0;
-%     -d2theta_t, 0, dtheta_t^2]
-% A2= [0, 0, 2*dtheta_t;
-%     0, 0, 0;
-%     -2*dtheta_t, 0, 0]
-%    
-% A3= [-mu*rho(1)/r_c^3;
-%     -mu*rho(2)/r_c^3;
-%     -mu/r_t^2-mu*(rho(3)-r_t)/r_c^3]
-
-
 %% Pontani Coordinates
 
 %%% chaser 
@@ -324,166 +281,16 @@ dq_r=0.5*G_r*q_r
 %    0.5*B1*q_r+0.5*B2*dq_r]; %% Eq 16 Liu with pontani coordinates
 
 
-%% LI Control
-
-% Relative position
-Ch=0.5
-rho_obs=rho_d
-d_0=1.9
-delta_0=2
-alpha=0.5
-etaPos=5e-4
 
 
-if norm(rho-rho_obs)>=delta_0
-    k=0
-else
-    k=0
-end
-
-gradUatt = Ch*(rho-rho_d)/sqrt((norm(rho-rho_d))^2+1)
-
-gradUrep = 4*k*(rho-rho_obs)*((norm(rho-rho_obs))^2-delta_0^2)/((norm(rho-rho_obs))^2-d_0^2)^3
-
-sRel=drho+alpha*(gradUatt+gradUrep)
-
-if abs(sRel(1))>=etaPos
-    s1Pos=tanh(sRel(1))
-else
-    s1Pos=sRel(1)/etaPos
-end
-
-if abs(sRel(2))>=etaPos
-    s2Pos=tanh(sRel(2))
-else
-    s2Pos=sRel(2)/etaPos
-end
-
-if abs(sRel(3))>=etaPos
-    s3Pos=tanh(sRel(3))
-else
-    s3Pos=sRel(3)/etaPos
-end
-
-satPos=[s1Pos; s2Pos; s3Pos]
-
-grad2Uatt=Ch*(((norm(rho-rho_d))^2+1)*eye(3)-(rho-rho_d)*transpose(rho-rho_d))/((norm(rho-rho_d))^2+1)^(3/2)
-
-
-
-
-
-gamma1=0.02 ;
-gamma2=0.005;
-gamma3=0.05;
-pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
-mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
-% spos=drho; % s position control, excluding APF term  Eq 20 Li
-% satt=derror(2:4); % s att control, excluding APF term Eq 36 
-
-Fc=-mc*alpha*grad2Uatt*drho-(gamma1+mc*gamma3)*satPos-pdiag*satPos;  %Eq 27 Li excluding APF terms
-
-
-% Relative attitude 
-Chrel=0.3
-etaAtt=5e-4
-beta=0.5
-gradUquat=Chrel*(q_r(2:4)-[0;0;0])/sqrt((norm(q_r(2:4)-[0;0;0]))^2+1)
-
-sAtt=dq_r(2:4)+beta*gradUquat
-
-if abs(sAtt(1))>=etaAtt
-    s1Att=sign(sAtt(1))
-else
-    s1Att=sAtt(1)/etaAtt
-end
-
-if abs(sAtt(2))>=etaAtt
-    s2Att=sign(sAtt(2))
-else
-    s2Att=sAtt(2)/etaAtt
-end
-
-if abs(sAtt(3))>=etaAtt
-    s3Att=sign(sAtt(3))
-else
-    s3Att=sAtt(3)/etaAtt
-end
-
-satAtt=[s1Att; s2Att; s3Att]
-% satAtt=[tanh(sAtt(1)); tanh(sAtt(2)); tanh(sAtt(3))]
-
-grad2Uquat=Chrel*(((norm(q_r(2:4)-[0;0;0]))^2+1)*eye(3)-(q_r(2:4)-[0;0;0])*transpose(q_r(2:4)-[0;0;0]))/((norm(q_r(2:4)-[0;0;0]))^2+1)^(3/2)
-
-T=[0, -q_r(4), q_r(3); q_r(4), 0, -q_r(2);-q_r(3), q_r(2), 0] + q_r(1)*eye(3)
-dT=[0, -dq_r(4), dq_r(3); dq_r(4), 0, -dq_r(2);-dq_r(3), dq_r(2), 0] + dq_r(1)*eye(3)
-P=inv(T)
-dP=inv(dT)
-Istar=transpose(P)*Ic*P
-
-IcPdq_r=Ic*P*dq_r(2:4)
-Pdq_r=P*dq_r(2:4)
-Arw_t=Ar*w_t
-twoPdq_r=2*P*dq_r(2:4)
-dw_t=It\(-w_t_tilde*It*w_t)
-
-Cstar=-Istar/dP*P-2*transpose(P)*[0, -IcPdq_r(3), IcPdq_r(2); IcPdq_r(3), 0, -IcPdq_r(1); -IcPdq_r(2), IcPdq_r(1), 0]*P
-
-
-Nstar=transpose(P)*([0, -Pdq_r(3), Pdq_r(2); Pdq_r(3), 0, -Pdq_r(1); -Pdq_r(2), Pdq_r(1), 0]*Ic*Ar*w_t)...
-    +transpose(P)*([0, -Arw_t(3), Arw_t(2); Arw_t(3), 0, -Arw_t(1);-Arw_t(2), Arw_t(1), 0]*Ic*P*dq_r(2:4))+...
-    0.5*transpose(P)*([0, -Arw_t(3), Arw_t(2); Arw_t(3), 0, -Arw_t(1); -Arw_t(2), Arw_t(1), 0]*Ic*Ar*w_t)-...
-    0.5*transpose(P)*Ic*([0, -twoPdq_r(3), twoPdq_r(2); twoPdq_r(3), 0, -twoPdq_r(1);-twoPdq_r(2), twoPdq_r(1), 0]*Ar*w_t-Ar*dw_t)
-
-Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4)-gamma2*satAtt-mdiag*satAtt
-Tcprime = 2*transpose(T)*Tc
-% TOUT=[TOUT, Tcprime];
-% TEST=0.5*transpose(P)*Tcprime
-
-
-                            
-
-% Tc=-gamma2*sign(satt)-mdiag*sign(satt); %Eq 37 excluding APF terms
-%  
-% T=[0, -q_r(4), q_r(3);
-%    q_r(4), 0, -q_r(2);
-%     -q_r(3), q_r(2), 0] + q_r(1)*eye(3);
-% P=inv(T);
-% 
-% Jstar=transpose(P)*Ic*P;
-% 
-% B=[(1/mc)*eye(3), zeros(3); % B matrix.. attitude term is wrong
-%     zeros(4,3), B3/Ic] ;
-% u=[Fc;Tc];
-% 
-
-
-% Logic=[Logic, thrusterLogic(transpose(Fc),transpose(Tcprime),q_c,theta_v, i_v, omega_v)]
-
-
-%% Derivatives
 
 t
 der(1,1)=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
 der(5:8,1)=0.5*G_t*q_t % derivative target attitude
-% if t<150
-%     der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity 
-% else
-%     der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c) % derivative relative angular velocity 
-% end
 der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity
 der(12:15,1)=0.5*G_c*q_c
 der(16:18,1)=drho_c
-% if t<95
-%     der(19:21,1)= g/mc%+Fc/mc %% simulation slow after convergence.. attitude converge takes longer though..
-% else
-%     der(19:21,1)= g/mc
-% end
 der(19:21,1)=g_c/mc+Fc/mc+d_c
 der(22:24,1)=drho_t
 der(25:27,1)=d2rho_t+d_t
-% der(12:18,1)=derror % derivative error
-% der(19:25,1)=f%+B*u % derivative velocity error
-% der(16:19,1)=dq_r
-% der(20:23,1)=0.5*B1*q_r+0.5*B2*dq_r

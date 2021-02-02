@@ -88,5 +88,5 @@ else
     thrustVals(11)=abs(y(6))
 end
 
-out=[thrustName, thrustVals]
-% out=thrustVals
+% out=[thrustName, thrustVals]
+out=thrustVals

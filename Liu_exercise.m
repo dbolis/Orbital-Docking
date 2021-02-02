@@ -394,6 +394,13 @@ X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_
 % title("rho")
 % legend
 
+
+delt=1
+res=0.1
+
+
+out=thrusterIntegration(delt,X0Li,res,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+
 %% Plotting integrationLi
 tic
 [t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
@@ -759,6 +766,15 @@ title("Tcprime");
 xlabel("time [s]")
 ylabel("Torque [Nm]")
 legend;
+
+% figure;
+% plot(t,logicMat2);
+% title("Thrusters");
+% xlabel("time [s]")
+% ylabel("Force [m]")
+% legend;
+
+
 % 
 % figure;
 % plot(t,sAttout);
