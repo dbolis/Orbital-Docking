@@ -1,4 +1,4 @@
-function der = pulseIntegration(t,x,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function der = pulseIntegration(t,x,thrusterVec,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 
 theta_v=x(1); % True anamoly 
 w_t=x(2:4); % target ang velocity
@@ -281,8 +281,9 @@ dq_r=0.5*G_r*q_r
 %    0.5*B1*q_r+0.5*B2*dq_r]; %% Eq 16 Liu with pontani coordinates
 
 
-
-
+thrustDynamics=thruster2dynamics(thrusterVec,q_c,theta_v,i_v,omega_v)
+Fc=thrustDynamics(1:3)
+Tcprime=thrustDynamics(4:6)
 
 t
 der(1,1)=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % derivative True anamoly 
