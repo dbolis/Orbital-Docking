@@ -119,7 +119,7 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 50
+tsim = 70
 tstep = 1
 options = 0
 X0=[theta_c_0; dtheta_c_0; theta_t_0; dtheta_t_0; rho_0; drho_0; w_c_0; w_t_0;q_c_0;q_t_0;w_r_0;q_r_0;dq_r_0; error_0; derror_0]
@@ -395,7 +395,7 @@ X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_
 % legend
 
 
-delt=0.5
+delt=1
 res=0.1
 
 
@@ -535,7 +535,7 @@ gamma1=0.02 ;
 gamma2=0.005;
 gamma3=0.05;
 pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
-mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
+mdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
 % spos=drho; % s position control, excluding APF term  Eq 20 Li
 % satt=derror(2:4); % s att control, excluding APF term Eq 36 
 Fclog=-mc*alpha*grad2Uatt*drho(1:3,i)-(gamma1+mc*gamma3)*satPos-pdiag*satPos;
@@ -562,11 +562,11 @@ gamma1=0.02 ;
 gamma2=0.005;
 gamma3=0.05;
 pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
-mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
+mdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
 
-Chrel=0.3;
+Chrel=0.5;
 etaAtt=5e-4
-beta=0.5;
+beta=0.6;
 gradUquat=Chrel*(q_r(2:4,i)-[0;0;0])/sqrt((norm(q_r(2:4,i)-[0;0;0]))^2+1);
 
 sAtt=dq_r(2:4)+beta*gradUquat

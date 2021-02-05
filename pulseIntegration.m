@@ -285,6 +285,7 @@ thrustDynamics=thruster2dynamics(thrusterVec,q_c,theta_v,i_v,omega_v)
 Fc=thrustDynamics(1:3)
 Tcprime=thrustDynamics(4:6)
 
+500000000
 t
 der(1,1)=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity

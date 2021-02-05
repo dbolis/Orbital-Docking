@@ -1,12 +1,12 @@
 function out = thrusterIntegration(delt,X0,options,res,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 
 tstep=1
-thrustMag=2
+thrustMag=1
 t0=0
 
 xout=[transpose(X0) t0]
 
-for z=1:1:1
+for z=1:1:200
     
     [t,x] = ode45(@integrationLi,t0:delt:t0+tstep,X0,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
     timeAll=size(t);
@@ -77,7 +77,7 @@ for z=1:1:1
         gamma2=0.005;
         gamma3=0.05;
         pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
-        mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
+        mdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
         % spos=drho; % s position control, excluding APF term  Eq 20 Li
         % satt=derror(2:4); % s att control, excluding APF term Eq 36 
         Fclog=-mc*alpha*grad2Uatt*drho(1:3,i)-(gamma1+mc*gamma3)*satPos-pdiag*satPos;
@@ -104,11 +104,11 @@ for z=1:1:1
         gamma2=0.005;
         gamma3=0.05;
         pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
-        mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
+        mdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
 
-        Chrel=0.3;
+        Chrel=0.5;
         etaAtt=5e-4
-        beta=0.5;
+        beta=0.6;
         gradUquat=Chrel*(q_r(2:4,i)-[0;0;0])/sqrt((norm(q_r(2:4,i)-[0;0;0]))^2+1);
 
         sAtt=dq_r(2:4)+beta*gradUquat
@@ -164,43 +164,43 @@ for z=1:1:1
         
     end
     
-thrusterArea=trapz(transpose(logicMat2(:,1:length(t)-1)))*1/(length(t)) %% check lengths t to make sure trapz integration is right
+thrusterArea=trapz(transpose(logicMat2(:,1:length(t))))*1/(length(t)-1) %% check lengths t to make sure trapz integration is right (tried to fix already)
 
 
 
-% eqTime=thrusterArea*tstep/thrustMag
-% eqTimeHalf=eqTime/2
-% 
-% 
-% data=round(eqTimeHalf,1)*10
-% filter=data>5
-% indeces=find(filter)
-% for j=1:length(indeces)
-%     data(indeces(j))=5
-% end
-% pulseTable=[zeros(1,5-data(1)), ones(1,data(1)*2), zeros(1,5-data(1)); %% havinf equal time around center of pulse neccesitates rounding to even number of pulses... 
-%       zeros(1,5-data(2)), ones(1,data(2)*2), zeros(1,5-data(2)); %% maybe can try with odd pulses if this doesntw work
-%       zeros(1,5-data(3)), ones(1,data(3)*2), zeros(1,5-data(3));
-%       zeros(1,5-data(4)), ones(1,data(4)*2), zeros(1,5-data(4));
-%       zeros(1,5-data(5)), ones(1,data(5)*2), zeros(1,5-data(5));
-%       zeros(1,5-data(6)), ones(1,data(6)*2), zeros(1,5-data(6));
-%       zeros(1,5-data(7)), ones(1,data(7)*2), zeros(1,5-data(7));
-%       zeros(1,5-data(8)), ones(1,data(8)*2), zeros(1,5-data(8));
-%       zeros(1,5-data(9)), ones(1,data(9)*2), zeros(1,5-data(9));
-%       zeros(1,5-data(10)), ones(1,data(10)*2), zeros(1,5-data(10));
-%       zeros(1,5-data(11)), ones(1,data(11)*2), zeros(1,5-data(11));
-%       zeros(1,5-data(12)), ones(1,data(12)*2), zeros(1,5-data(12))]
-% 
-% X0forLoop=X0
-% for k=0:1:9
-%     
-%     [tforLoop,xforLoop] = ode45(@pulseIntegration,(k/10):0.1:((k+1)/10),X0forLoop,options,pulseTable(1:12,k+1),e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
-%     X0forLoop=transpose(xforLoop(end,:))
-% 
-% end
-% t0=t0+1
-% X0=X0forLoop
-% xout=[xout; transpose(X0) t0]
+eqTime=thrusterArea/thrustMag
+eqTimeHalf=eqTime/2
+
+
+data=round(eqTimeHalf,1)*10
+filter=data>5
+indeces=find(filter)
+for j=1:length(indeces)
+    data(indeces(j))=5
+end
+pulseTable=[zeros(1,5-data(1)), thrustMag*ones(1,data(1)*2), zeros(1,5-data(1)); %% havinf equal time around center of pulse neccesitates rounding to even number of pulses... 
+      zeros(1,5-data(2)), thrustMag*ones(1,data(2)*2), zeros(1,5-data(2)); %% maybe can try with odd pulses if this doesntw work
+      zeros(1,5-data(3)), thrustMag*ones(1,data(3)*2), zeros(1,5-data(3));
+      zeros(1,5-data(4)), thrustMag*ones(1,data(4)*2), zeros(1,5-data(4));
+      zeros(1,5-data(5)), thrustMag*ones(1,data(5)*2), zeros(1,5-data(5));
+      zeros(1,5-data(6)), thrustMag*ones(1,data(6)*2), zeros(1,5-data(6));
+      zeros(1,5-data(7)), thrustMag*ones(1,data(7)*2), zeros(1,5-data(7));
+      zeros(1,5-data(8)), thrustMag*ones(1,data(8)*2), zeros(1,5-data(8));
+      zeros(1,5-data(9)), thrustMag*ones(1,data(9)*2), zeros(1,5-data(9));
+      zeros(1,5-data(10)), thrustMag*ones(1,data(10)*2), zeros(1,5-data(10));
+      zeros(1,5-data(11)), thrustMag*ones(1,data(11)*2), zeros(1,5-data(11));
+      zeros(1,5-data(12)), thrustMag*ones(1,data(12)*2), zeros(1,5-data(12))]
+
+X0forLoop=X0
+for k=0:1:9
+    
+    [tforLoop,xforLoop] = ode45(@pulseIntegration,(t0+k/10):0.1:(t0+(k+1)/10),X0forLoop,options,pulseTable(1:12,k+1),e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+    X0forLoop=transpose(xforLoop(end,:))
+
+end
+t0=t0+1
+X0=X0forLoop
+xout=[xout; transpose(X0) t0]
 end
 
-out=logicMat2
+out=[xout]

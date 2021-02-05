@@ -377,7 +377,7 @@ gamma1=0.02 ;
 gamma2=0.005;
 gamma3=0.05;
 pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
-mdiag=[0.3, 0, 0; 0, 0.3, 0; 0, 0, 0.3];
+mdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
 % spos=drho; % s position control, excluding APF term  Eq 20 Li
 % satt=derror(2:4); % s att control, excluding APF term Eq 36 
 
@@ -385,9 +385,9 @@ Fc=-mc*alpha*grad2Uatt*drho-(gamma1+mc*gamma3)*satPos-pdiag*satPos;  %Eq 27 Li e
 
 
 % Relative attitude 
-Chrel=0.3
+Chrel=0.5
 etaAtt=5e-4
-beta=0.5
+beta=0.6
 gradUquat=Chrel*(q_r(2:4)-[0;0;0])/sqrt((norm(q_r(2:4)-[0;0;0]))^2+1)
 
 sAtt=dq_r(2:4)+beta*gradUquat
@@ -462,7 +462,7 @@ Tcprime = 2*transpose(T)*Tc
 
 
 %% Derivatives
-
+9000000000
 t
 der(1,1)=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
@@ -480,7 +480,7 @@ der(16:18,1)=drho_c
 % else
 %     der(19:21,1)= g/mc
 % end
-der(19:21,1)=g_c/mc+Fc/mc+d_c
+der(19:21,1)=d_c+Fc/mc+g_c/mc
 der(22:24,1)=drho_t
 der(25:27,1)=d2rho_t+d_t
 % der(12:18,1)=derror % derivative error
