@@ -395,7 +395,7 @@ X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_
 % legend
 
 
-delt=1
+delt=0.5
 res=0.1
 
 

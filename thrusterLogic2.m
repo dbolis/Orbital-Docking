@@ -5,9 +5,9 @@ force_c=transpose(force)*ECI2LVLH313(theta, i, omega)*transpose((q_c(1)^2-transp
                                                                                             -q_c(3), q_c(2), 0])
 
                                                                                         
-Rx=1
-Ry=1
-Rz=1
+Rx=5
+Ry=5
+Rz=5
                                                                                      
 thrustName=["1x";
         "2x";

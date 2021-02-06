@@ -22,7 +22,7 @@ drho=drho_c-drho_t
 % drho=derror(1:3)+drho_d; % relative velocity
 
 
-global count w_rout TOUT Logic outt
+global count w_rout TOUT Logic outt logicMat2
 count=count+1
 
 
@@ -458,7 +458,7 @@ Tcprime = 2*transpose(T)*Tc
 % 
 
 
-% Logic=[Logic, thrusterLogic(transpose(Fc),transpose(Tcprime),q_c,theta_v, i_v, omega_v)]
+ logicMat2=[ logicMat2, thrusterLogic2(Fc,Tcprime,q_c,theta_v, i_v, omega_v)]
 
 
 %% Derivatives

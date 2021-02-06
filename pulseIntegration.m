@@ -97,7 +97,7 @@ fSolar_c_v=fSolar_c_c*ECI2LVLH123(zeta_c, phi_c, lambda_c)*transpose(ECI2LVLH313
 r_tVec_v=[r_v;0;0]+rho_t  % target radius vector in virtual frame
 v_tVec_v=[sqrt(mu/p_v)*e_v*sin(theta_v)+drho_t(1)-dtheta_v*rho_t(2); sqrt(mu/p_v)*(1+e_v*cos(theta_v))+drho_t(2)+dtheta_v*rho_t(1); drho_t(3)] % target velocity vector in virtual frame
 
-r_tVec_ECI=transpose(r_tVec_v)*ECI2LVLH313(theta_v,i_v,omega_v) % target radius vector in ECI
+ r_tVec_ECI=transpose(r_tVec_v)*ECI2LVLH313(theta_v,i_v,omega_v) % target radius vector in ECI
 v_tVec_ECI=transpose(v_tVec_v)*ECI2LVLH313(theta_v,i_v,omega_v) % target velocity vector in ECI
 
 

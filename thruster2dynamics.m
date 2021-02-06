@@ -1,8 +1,8 @@
 function out=thruster2dynamics(thrusterVec,q_c,theta, i, omega)
 
-Rx=1
-Ry=1
-Rz=1
+Rx=5
+Ry=5
+Rz=5
 
 
 
