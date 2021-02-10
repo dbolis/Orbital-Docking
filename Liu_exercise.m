@@ -44,13 +44,16 @@ p_c=a_c*(1-e_c^2) % chaser parameter [m]
 p_t=a_t*(1-e_t^2) % target parameter [m]
 p_v=a_v*(1-e_v^2) % target parameter [m]
 
-Ic=[40, -12, 20; % chaser inertial matrix [kg*m^2]
-    -12, 80, 10;
-    20, 10, 50]
+sidelength_c=1.5
+mc=100 % chaser mass [kg]
+
+Ic=[(1/6)*mc*sidelength_c^2, 0, 0; % chaser inertial matrix [kg*m^2]
+    0, (1/6)*mc*sidelength_c^2, 0;
+    0, 0, (1/6)*mc*sidelength_c^2]
 It=[50, 0, 0; % target inertial matrix [kg*m^2]
     0, 70, 0;
     0, 0, 100]
-mc=20 % chaser mass [kg]
+
 
 
 w_c_0=[0;0;0] % initial ang velocity chaser [rad/s]
@@ -395,7 +398,7 @@ X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_
 % legend
 
 
-delt=0.5
+delt=1
 res=0.1
 
 
@@ -621,11 +624,11 @@ Tcprimelog = 2*transpose(T)*Tc
 Tcprime(1:3,i) = 2*transpose(T)*Tc;
 Tcout(1:3,i)=Tc
 
-logicMat=[logicMat, thrusterLogic(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
-logicMat2=[logicMat2, thrusterLogic2(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
-logicMatOptimized=[logicMatOptimized, thrusterLogicOptimized(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
+% logicMat=[logicMat, thrusterLogic(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
+% logicMat2=[logicMat2, thrusterLogic2(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
+% logicMatOptimized=[logicMatOptimized, thrusterLogicOptimized(Fclog,Tcprimelog,q_c(1:4,i), x(i,1), i_v, omega_v)]
 end
-time2=toc
+% time2=toc
 
 
 
@@ -691,14 +694,14 @@ plot(t,rho);
 title("rho");
 xlabel("time [s]")
 ylabel("displacement [m]")
-legend;
+legend("x","y","z");
 
 figure;
 plot(t,drho);
 title("drho");
 xlabel("time [s]")
 ylabel("velocity [m/s]")
-legend;
+legend("v_x","v_y","v_z");
 
 figure;
 plot(t,vecnorm(rho_c));
@@ -758,7 +761,8 @@ figure;
 plot(t,q_r);
 title("q_r");
 xlabel("time [s]")
-legend;
+ylabel("quaternions")
+legend("q0","q1","q2","q3");
 
 figure;
 plot(t,Tcprime);

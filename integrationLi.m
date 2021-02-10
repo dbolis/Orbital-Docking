@@ -458,7 +458,7 @@ Tcprime = 2*transpose(T)*Tc
 % 
 
 
- logicMat2=[ logicMat2, thrusterLogic2(Fc,Tcprime,q_c,theta_v, i_v, omega_v)]
+ logicMat2=[logicMat2, thrusterLogic2(Fc,Tcprime,q_c,theta_v, i_v, omega_v)]
 
 
 %% Derivatives
