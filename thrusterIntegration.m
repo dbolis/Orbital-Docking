@@ -1,17 +1,19 @@
 function out = thrusterIntegration(delt,X0,options,res,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 
 
-global logicMat2
+global logicMat2 Tcontrol Fcontrol
 
 
 tstep=1
 thrustMag=2
 t0=0
 
-xout=[transpose(X0) t0]
+xout=[transpose(X0),t0,0,0,0,0,0,0]
 
 for z=1:1:175
     logicMat2=[]
+    Tcontrol=[]
+    Fcontrol=[]
     [t,x] = ode45(@integrationLi,t0:delt:t0+tstep,X0,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 %     timeAll=size(t);
 %     q_t=transpose(x(1:timeAll(1),5:8));
@@ -171,7 +173,7 @@ for z=1:1:175
 
 t=[1:1:size(logicMat2,2)]
 thrusterArea=trapz(transpose(logicMat2(:,1:length(t))))*1/(length(t)-1) %% check lengths t to make sure trapz integration is right (tried to fix already)
-
+% 
 thrusterAreaFirst=trapz(transpose(logicMat2(:,1:floor(length(t)/2))))*((floor(length(t)/2)-1)/(length(t)-1))/(floor(length(t)/2)-1)
 thrusterAreaSecond=trapz(transpose(logicMat2(:,floor(length(t)/2):length(t))))*((length(t)-floor(length(t)/2))/(length(t)-1))/((length(t)-floor(length(t)/2)))
 
@@ -244,7 +246,7 @@ for k=0:1:9
 end
 t0=t0+1
 X0=X0forLoop
-xout=[xout; transpose(X0) t0]
+xout=[xout; transpose(X0), t0, mean(transpose(Fcontrol)), mean(transpose(Tcontrol))]
 end
 
 out=[xout]
