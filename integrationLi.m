@@ -25,8 +25,7 @@ drho=drho_c-drho_t
 global count w_rout TOUT Logic outt logicMat2 Tcontrol Fcontrol
 count=count+1
 
-
-
+mt=200
 %% Dynamics with Perterbances
 dtheta_v=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2
 d2theta_v=-2*(mu/p_v^3)*(e_v*sin(theta_v))*(1+e_v*cos(theta_v))^3
@@ -156,7 +155,7 @@ v_r_tVec=[v_r_t, v_e_t-omega_E*norm(r_tVec_ECI)*cos(phi_t) v_n_t]*transpose([1 0
 
 atmDensity_t=1.225*exp(-(norm(r_tVec_ECI)-Re)/10332.6)
 
-fDrag_t_t=-0.5*c_D*AerS/mc*atmDensity_t*norm(v_r_tVec)*v_r_tVec
+fDrag_t_t=-0.5*c_D*AerS/mt*atmDensity_t*norm(v_r_tVec)*v_r_tVec
 fDrag_t_v=fDrag_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
 %outt=[outt, [fDrag_t_t;fDrag_t_v;v_r_tVec]] 
 % outt=[outt, e_t]
@@ -172,7 +171,7 @@ r_sunVec_t=1.495978e11*[cos(theta_sol), cos(ecl_obliq)*sin(theta_sol), sin(ecl_o
 % nu=1 % shadow function 
 % P_sr=4.56e-6 % solar radiation pressure
 c_R_t=1.5 % radiation pressure coefficient
-fSolar_t_t=-nu*P_sr*AerS*c_R_t/mc*r_sunVec_t/norm(r_sunVec_t) 
+fSolar_t_t=-nu*P_sr*AerS*c_R_t/mt*r_sunVec_t/norm(r_sunVec_t) 
 fSolar_t_v=fSolar_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
 
 d_c=transpose(fJ2_c_v)+transpose(fDrag_c_v)+transpose(fSolar_c_v)
@@ -227,6 +226,8 @@ d2Z_c= -mu*Z_c/((norm(r_cVec_v))^3); %EQ 18 Pontani
 d2rho_c=[d2X_c;d2Y_c;d2Z_c]; %d2rho 
 
 g_c=mc*(-mu*r_cVec_v/(norm(r_cVec_v)^3)+mu*r_tVec_v/(norm(r_tVec_v)^3)) %% need to rewrite!
+
+
 
 %%% target
 
@@ -331,7 +332,7 @@ Ch=0.5
 rho_obs=rho_d
 d_0=1.9
 delta_0=2
-alpha=0.5
+alpha=1
 etaPos=5e-4
 
 
@@ -376,13 +377,15 @@ grad2Uatt=Ch*(((norm(rho-rho_d))^2+1)*eye(3)-(rho-rho_d)*transpose(rho-rho_d))/(
 gamma1=0.02 ;
 gamma2=0.005;
 gamma3=0.05;
-pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
+pdiag=[0.9, 0, 0; 0, 0.9, 0; 0, 0, 0.9];
 mdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
 % spos=drho; % s position control, excluding APF term  Eq 20 Li
 % satt=derror(2:4); % s att control, excluding APF term Eq 36 
 
 Fc=-mc*alpha*grad2Uatt*drho-(gamma1+mc*gamma3)*satPos-pdiag*satPos;  %Eq 27 Li excluding APF terms
 
+Fc_v=transpose(Fc)*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
+Fc_v=transpose(Fc_v)
 
 % Relative attitude 
 Chrel=0.5
@@ -481,7 +484,7 @@ der(16:18,1)=drho_c
 % else
 %     der(19:21,1)= g/mc
 % end
-der(19:21,1)=d_c+Fc/mc+g_c/mc
+der(19:21,1)=d_c+Fc_v/mc+g_c/mc
 der(22:24,1)=drho_t
 der(25:27,1)=d2rho_t+d_t
 % der(12:18,1)=derror % derivative error

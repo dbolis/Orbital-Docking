@@ -1,7 +1,7 @@
-function out = thrusterIntegration(delt,X0,options,res,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function [pulses,out] = thrusterIntegration(delt,X0,options,res,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 
 
-global logicMat2 Tcontrol Fcontrol
+global logicMat2 Tcontrol Fcontrol 
 
 
 tstep=1
@@ -9,8 +9,9 @@ thrustMag=2
 t0=0
 
 xout=[transpose(X0),t0,0,0,0,0,0,0]
+pulseTableOut=[]
 
-for z=1:1:175
+for z=1:1:750
     logicMat2=[]
     Tcontrol=[]
     Fcontrol=[]
@@ -212,7 +213,9 @@ pulseTable=[zeros(1,5-dataFirst(1)),thrustMag*ones(1,dataFirst(1)),thrustMag*one
         zeros(1,5-dataFirst(12)),thrustMag*ones(1,dataFirst(12)),thrustMag*ones(1,dataSecond(12)),zeros(1,5-dataSecond(12))]
         
 
-
+    
+pulseAndTime=[pulseTable;[t0:0.1:t0+0.9]]
+pulseTableOut=[pulseTableOut, pulseAndTime];
 
 % eqTime=thrusterArea/thrustMag
 % eqTimeHalf=eqTime/2
@@ -246,7 +249,8 @@ for k=0:1:9
 end
 t0=t0+1
 X0=X0forLoop
-xout=[xout; transpose(X0), t0, mean(transpose(Fcontrol)), mean(transpose(Tcontrol))]
+xout=[xout; transpose(X0), t0, mean(transpose(Fcontrol)), mean(transpose(Tcontrol))];
 end
 
-out=[xout]
+out=xout
+pulses=pulseTableOut

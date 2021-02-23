@@ -122,13 +122,16 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 70
+tsim = 500
 tstep = 1
 options = 0
 X0=[theta_c_0; dtheta_c_0; theta_t_0; dtheta_t_0; rho_0; drho_0; w_c_0; w_t_0;q_c_0;q_t_0;w_r_0;q_r_0;dq_r_0; error_0; derror_0]
 X0min=[theta_t_0; rho_0; drho_0;w_t_0;q_t_0;w_r_0;q_r_0;dq_r_0]
 X0Error=[theta_t_0;w_t_0;q_t_0;w_r_0;error_0;derror_0]
-X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_0;dq_r_0]
+% X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_0;dq_r_0]
+numb=4
+X0Li=[theta_t_0;inits(1:3,numb);q_t_0;inits(10:12,numb);inits(19:22,numb);inits(13:15,numb);inits(16:18,numb);inits(4:6,numb);inits(7:9,numb)]
+
 % [t,x] = ode45(@integrationLiu,0:tstep:tsim,X0,options,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta)
 % [t,x] = ode45(@integrationLiuMin,0:tstep:tsim,X0min,options,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta)
 % [t,x] = ode45(@integrationLiuError,0:tstep:tsim,X0Error,options,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
@@ -402,7 +405,7 @@ delt=1
 res=0.1
 
 tic
-out=thrusterIntegration(delt,X0Li,res,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+[pulses,out]=thrusterIntegration(delt,X0Li,res,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 time2=toc
 %% Plotting integrationLi
 
@@ -490,7 +493,7 @@ Ch=0.5
 rho_obs=rho_d
 d_0=1.9
 delta_0=2
-alpha=0.5
+alpha=1
 etaPos=5e-4
 
 
@@ -537,10 +540,11 @@ grad2Uatt=Ch*(((norm(rho(1:3,i)-rho_d))^2+1)*eye(3)-(rho(1:3,i)-rho_d)*transpose
 gamma1=0.02 ;
 gamma2=0.005;
 gamma3=0.05;
-pdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
+pdiag=[0.9, 0, 0; 0, 0.9, 0; 0, 0, 0.9];
 mdiag=[0.5, 0, 0; 0, 0.5, 0; 0, 0, 0.5];
 % spos=drho; % s position control, excluding APF term  Eq 20 Li
 % satt=derror(2:4); % s att control, excluding APF term Eq 36 
+%wrong Fc frame 
 Fclog=-mc*alpha*grad2Uatt*drho(1:3,i)-(gamma1+mc*gamma3)*satPos-pdiag*satPos;
 Fc(1:3,i)=-mc*alpha*grad2Uatt*drho(1:3,i)-(gamma1+mc*gamma3)*satPos-pdiag*satPos;  %Eq 27 Li excluding APF terms
 
@@ -654,12 +658,12 @@ legend;
 % xlabel("time [s]")
 % legend;
 
-% figure;
-% plot(t,w_rOut);
-% title("w_r");
-% xlabel("time [s]")
-% ylabel("angular velocity [rad/s]")
-% legend;
+figure;
+plot(t,w_rOut);
+title("w_r");
+xlabel("time [s]")
+ylabel("angular velocity [rad/s]")
+legend("w_x","w_y","w_z");
 
 figure;
 plot(t,x(:,16:18));
@@ -723,7 +727,7 @@ plot(t,x(:,29:31));
 title("Fc");
 xlabel("time [s]")
 ylabel("thrust [N]")
-legend;
+legend("Fx", "Fy", "Fz");
 
 % figure;
 % plot(t,sRelout);
@@ -769,7 +773,7 @@ plot(t,x(:,32:34));
 title("Tcprime");
 xlabel("time [s]")
 ylabel("Torque [Nm]")
-legend;
+legend("Tx", "Ty", "Tz");
 
 % figure;
 % plot(t,logicMat2);
@@ -788,7 +792,7 @@ legend;
 % plot(t,Eulersq_r)
 % title("Eulersq_r")
 % legend
-% 
+% whic
 % figure
 % plot(t,Eulersq_c)
 % title("Eulersq_c")
