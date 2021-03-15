@@ -1,6 +1,6 @@
 function out=genRandInit(w_t,rho_t,drho_t,w_c,rho_c,drho_c)
 
-num=10
+num=2
 
 w_tSD=deg2rad(5)
 rho_tSD=10
@@ -37,9 +37,9 @@ drho_c_init=ones(3,num).*drho_c
 drho_c_out=normrnd(drho_c_init, drho_cSD)
 
 
-PHI=pi*rand(1,10)
-zeta=2*pi*rand(1,10)
-r=2*rand(1,10)-ones(1,10)
+PHI=pi*rand(1,num)
+zeta=2*pi*rand(1,num)
+r=2*rand(1,num)-ones(1,num)
 phi=asin(r)
 
 a1=cos(zeta).*cos(phi)

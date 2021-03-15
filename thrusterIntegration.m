@@ -11,7 +11,7 @@ t0=0
 xout=[transpose(X0),t0,0,0,0,0,0,0]
 pulseTableOut=[]
 
-for z=1:1:750
+for z=1:1:1500
     logicMat2=[]
     Tcontrol=[]
     Fcontrol=[]

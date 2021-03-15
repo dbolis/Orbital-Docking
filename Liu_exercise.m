@@ -102,10 +102,10 @@ r_t_0=p_t/(1+e_t*cos(theta_t_0)) %initial target distance from earth CoM [m]
 rho_0=[0; 0; 0] % initial relative position
 drho_0=[0; 0; 0] % initial relative velocity
 
-rho_c_0=[-20; 12; -7] % initial chaser relative position
-drho_c_0=[0.5; -0.7; 1] % initial chaser relative velocity
+rho_c_0=[1; 2; 3] % initial chaser relative position
+drho_c_0=[0; 0; 0] % initial chaser relative velocity
 
-rho_t_0=[1; 0; 0] % initial target relative position (if at 0;0;0 get imaginary number)
+rho_t_0=[2; 3; 4] % initial target relative position (if at 0;0;0 get imaginary number)
 drho_t_0=[0; 0; 0] % initial target relative velocity
 
 
@@ -122,14 +122,15 @@ q_d=[1;0;0;0] % desired final relatitve atttitude
 error_0=[rho_0-rho_d;q_r_0-q_d] % initial error [position; attitude]
 derror_0=[drho_0-drho_d; dq_r_0] % initial derror [velocity; angular velocity]
 
-tsim = 500
+tsim = 1.2105e+04+100
 tstep = 1
 options = 0
 X0=[theta_c_0; dtheta_c_0; theta_t_0; dtheta_t_0; rho_0; drho_0; w_c_0; w_t_0;q_c_0;q_t_0;w_r_0;q_r_0;dq_r_0; error_0; derror_0]
 X0min=[theta_t_0; rho_0; drho_0;w_t_0;q_t_0;w_r_0;q_r_0;dq_r_0]
 X0Error=[theta_t_0;w_t_0;q_t_0;w_r_0;error_0;derror_0]
 % X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]%;q_r_0;dq_r_0]
-numb=4
+numb=20
+inits=inits2
 X0Li=[theta_t_0;inits(1:3,numb);q_t_0;inits(10:12,numb);inits(19:22,numb);inits(13:15,numb);inits(16:18,numb);inits(4:6,numb);inits(7:9,numb)]
 
 % [t,x] = ode45(@integrationLiu,0:tstep:tsim,X0,options,e_c,n_c,e_t,n_t,p_c,p_t,Ic,It,mc,mu,beta,p,q,eta)
@@ -409,7 +410,9 @@ tic
 time2=toc
 %% Plotting integrationLi
 
-[t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+% [t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+t=transpose([1:1:751])
+x=out
 timeAll=size(t);
 % error=transpose(x(1:timeAll(1),12:18));
 % derror=transpose(x(1:timeAll(1),19:25));
@@ -634,7 +637,7 @@ Tcout(1:3,i)=Tc
 end
 % time2=toc
 
-
+fontSize=25
 
 
 figure;
@@ -667,10 +670,12 @@ legend("w_x","w_y","w_z");
 
 figure;
 plot(t,x(:,16:18));
-title("rho_c");
-xlabel("time [s]")
-ylabel("displacement [m]")
-legend;
+ax=gca;
+ax.FontSize=17;
+title("\rho_c","FontSize",fontSize);
+xlabel("Time [s]","FontSize",fontSize)
+ylabel("Displacement [m]","FontSize",fontSize)
+legend("X","Y","Z")
 
 figure;
 plot(t,x(:,19:21));
@@ -681,10 +686,12 @@ legend;
 
 figure;
 plot(t,x(:,22:24));
-title("rho_t");
-xlabel("time [s]")
-ylabel("displacement [m]")
-legend;
+ax=gca;
+ax.FontSize=17;
+title("\rho_t","FontSize",fontSize);
+xlabel("Time [s]","FontSize",fontSize)
+ylabel("Displacement [m]","FontSize",fontSize)
+legend("X","Y","Z")
 
 figure;
 plot(t,x(:,19:21));
@@ -724,10 +731,13 @@ legend;
 
 figure;
 plot(t,x(:,29:31));
-title("Fc");
-xlabel("time [s]")
-ylabel("thrust [N]")
-legend("Fx", "Fy", "Fz");
+ax=gca;
+ax.FontSize=17;
+title("Commanded Force","FontSize",fontSize);
+xlabel("Time [s]","FontSize",fontSize)
+ylabel("Thrust [N]","FontSize",fontSize)
+legend("F_x", "F_y", "F_z","FontSize",17);
+
 
 % figure;
 % plot(t,sRelout);
@@ -770,10 +780,24 @@ legend("q0","q1","q2","q3");
 
 figure;
 plot(t,x(:,32:34));
-title("Tcprime");
-xlabel("time [s]")
-ylabel("Torque [Nm]")
-legend("Tx", "Ty", "Tz");
+ax=gca;
+ax.FontSize=17;
+title("Commanded Torque","FontSize",fontSize);
+xlabel("Time [s]","FontSize",fontSize)
+ylabel("Torque [Nm]","FontSize",fontSize)
+legend("T_x", "T_y", "T_z","FontSize",17);
+
+
+
+% figure;
+% spy(pulses(1:12,100:150));
+% ax=gca;
+% ax.FontSize=17;
+% title("Thruster Pulses","FontSize",fontSize);
+% xlabel("0.1-second timesteps","FontSize",fontSize)
+% ylabel("Thruster #","FontSize",fontSize)
+
+
 
 % figure;
 % plot(t,logicMat2);

@@ -476,7 +476,7 @@ der(5:8,1)=0.5*G_t*q_t % derivative target attitude
 % else
 %     der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c) % derivative relative angular velocity 
 % end
-der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity
+der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)%+Ic\Tcprime % derivative relative angular velocity
 der(12:15,1)=0.5*G_c*q_c
 der(16:18,1)=drho_c
 % if t<95
