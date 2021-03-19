@@ -13,7 +13,7 @@ drho=drho_c-drho_t
 
 
 
-global count logicMat2 Tcontrol Fcontrol
+global count w_rout TOUT Logic outt logicMat2 Tcontrol Fcontrol
 count=count+1
 
 mt=200
@@ -148,7 +148,8 @@ atmDensity_t=1.225*exp(-(norm(r_tVec_ECI)-Re)/10332.6)
 
 fDrag_t_t=-0.5*c_D*AerS/mt*atmDensity_t*norm(v_r_tVec)*v_r_tVec
 fDrag_t_v=fDrag_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
-
+%outt=[outt, [fDrag_t_t;fDrag_t_v;v_r_tVec]] 
+% outt=[outt, e_t]
 
 %%% Solar Radiation Pressure
 i_t=acos(h_tVers(3))
@@ -158,7 +159,8 @@ omega_t=2*atan(somega_t/(1+comega_t))
 
 r_sunVec_t=1.495978e11*[cos(theta_sol), cos(ecl_obliq)*sin(theta_sol), sin(ecl_obliq)*sin(theta_sol)]*transpose(ECI2LVLH313(theta_t,i_t,omega_t))
 
-
+% nu=1 % shadow function 
+% P_sr=4.56e-6 % solar radiation pressure
 c_R_t=1.5 % radiation pressure coefficient
 fSolar_t_t=-nu*P_sr*AerS*c_R_t/mt*r_sunVec_t/norm(r_sunVec_t) 
 fSolar_t_v=fSolar_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
@@ -391,7 +393,7 @@ t
 der(1,1)=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
 der(5:8,1)=0.5*G_t*q_t % derivative target attitude
-der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity
+der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)%+Ic\Tcprime % derivative relative angular velocity
 der(12:15,1)=0.5*G_c*q_c
 der(16:18,1)=drho_c
 der(19:21,1)=d_c+Fc_v/mc+g_c/mc

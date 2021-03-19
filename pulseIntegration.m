@@ -144,8 +144,7 @@ atmDensity_t=1.225*exp(-(norm(r_tVec_ECI)-Re)/10332.6)
 
 fDrag_t_t=-0.5*c_D*AerS/mc*atmDensity_t*norm(v_r_tVec)*v_r_tVec
 fDrag_t_v=fDrag_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
-%outt=[outt, [fDrag_t_t;fDrag_t_v;v_r_tVec]] 
-% outt=[outt, e_t]
+
 
 %%% Solar Radiation Pressure
 i_t=acos(h_tVers(3))
@@ -155,8 +154,7 @@ omega_t=2*atan(somega_t/(1+comega_t))
 
 r_sunVec_t=1.495978e11*[cos(theta_sol), cos(ecl_obliq)*sin(theta_sol), sin(ecl_obliq)*sin(theta_sol)]*transpose(ECI2LVLH313(theta_t,i_t,omega_t))
 
-% nu=1 % shadow function 
-% P_sr=4.56e-6 % solar radiation pressure
+
 c_R_t=1.5 % radiation pressure coefficient
 fSolar_t_t=-nu*P_sr*AerS*c_R_t/mc*r_sunVec_t/norm(r_sunVec_t) 
 fSolar_t_v=fSolar_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
@@ -219,25 +217,15 @@ G_t=[0, -transpose(w_t); %EQ 8 Liu
 
 q_r=quatProd(quatRecip(q_t),q_c); %EQ 13 Liu solved for q_c
 
-
-Ac=(q_c(1)^2-transpose(q_c(2:4))*q_c(2:4))*eye(3)+2*(q_c(2:4))*transpose(q_c(2:4))-2*q_c(1)*[0, -q_c(4), q_c(3); %EQ 10 Liu
-                                                                                            q_c(4), 0, -q_c(2);
-                                                                                           -q_c(3), q_c(2), 0];  
-                                                                                       
-At=(q_t(1)^2-transpose(q_t(2:4))*q_t(2:4))*eye(3)+2*(q_t(2:4))*transpose(q_t(2:4))-2*q_t(1)*[0, -q_t(4), q_t(3); %EQ 10 Liu
-                                                                                            q_t(4), 0, -q_t(2);
-                                                                                            -q_t(3), q_t(2), 0];
                                                                                         
 Ar=(q_r(1)^2-transpose(q_r(2:4))*q_r(2:4))*eye(3)+2*(q_r(2:4))*transpose(q_r(2:4))-2*q_r(1)*[0, -q_r(4), q_r(3); %EQ 10 Liu
                                                                                             q_r(4), 0, -q_r(2);
                                                                                             -q_r(3), q_r(2), 0];                                                                                        
-                                                                             
-Act=Ac*At; %EQ 10 Liu
 
 
 
 w_r=w_c-Ar*w_t; %EQ 11 Liu solved for w_c
-% w_rout=[w_rout w_r];
+
 w_c_tilde = [0, -w_c(3), w_c(2); %EQ 12 Liu
              w_c(3), 0, -w_c(1);
               -w_c(2), w_c(1), 0];
@@ -247,15 +235,7 @@ w_r_tilde = [0, -w_r(3), w_r(2); %EQ 12 Liu
              w_r(3), 0, -w_r(1);
               -w_r(2), w_r(1), 0];
 
-% 
-% dw_t=It\(-w_t_tilde*It*w_t); %EQ 6 Liu
-% tc=Ic\(-w_c_tilde*Ic*w_c)-Ar*dw_t+w_r_tilde*w_c;
-%                                                 
-% tc_tilde = [0, -tc(3), tc(2); %EQ 12 Liu
-%              tc(3), 0, -tc(1);
-%               -tc(2), tc(1), 0];
-% 
-% 
+
 G_r=[0, -transpose(w_r);
     w_r, -w_r_tilde]
 
@@ -264,28 +244,12 @@ G_c=[0, -transpose(w_c);
 
 dq_r=0.5*G_r*q_r
 
-% B1=[0, -transpose(tc); %EQ 16 Liu
-%     tc, -tc_tilde];
-% B2=[0, -transpose(w_r); %EQ 16 Liu
-%     w_r, -w_r_tilde];
-% B3=[-transpose(q_r(2:4)); %EQ 16 Liu
-%     q_r(1)*eye(3)+[0, -q_r(4), q_r(3);
-%                    q_r(4), 0, -q_r(2);
-%                    -q_r(3), q_r(2), 0]];
-%                
-% 
-% f=[A1*rho+A2*drho+A3;
-%    0.5*B1*q_r+0.5*B2*dq_r] %% Eq 16 Liu with Liu coordinates
-
-% f=[d2rho;   
-%    0.5*B1*q_r+0.5*B2*dq_r]; %% Eq 16 Liu with pontani coordinates
-
 
 thrustDynamics=thruster2dynamics(thrusterVec,q_c,theta_v,i_v,omega_v)
 Fc=thrustDynamics(1:3)
 Tcprime=thrustDynamics(4:6)
 
-500000000
+
 t
 der(1,1)=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
