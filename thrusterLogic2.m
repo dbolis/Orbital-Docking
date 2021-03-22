@@ -2,27 +2,27 @@ function out=thrusterLogic2(force,torque,q_c,theta, i, omega)
 
 force_c=transpose(force)*ECI2LVLH313(theta, i, omega)*transpose((q_c(1)^2-transpose(q_c(2:4))*q_c(2:4))*eye(3)+2*(q_c(2:4))*transpose(q_c(2:4))-2*q_c(1)*[0, -q_c(4), q_c(3)
                                                                                             q_c(4), 0, -q_c(2)
-                                                                                            -q_c(3), q_c(2), 0])
+                                                                                            -q_c(3), q_c(2), 0]) % convert from virtual to chaser frame
 
                                                                                         
-Rx=0.5
-Ry=0.5
-Rz=0.5
+Rx=0.5 % moment arm x
+Ry=0.5 % moment arm y
+Rz=0.5 % moment arm z
                                                                                      
-thrustName=["1x";
-        "2x";
-        "3x";
-        "4x";
-        "1y";
-        "2y";
-        "3y";
-        "4y";
-        "1z";
-        "2z";
-        "3z";
-        "4z"]
+% thrustName=["1x";
+%         "2x";
+%         "3x";
+%         "4x";
+%         "1y";
+%         "2y";
+%         "3y";
+%         "4y";
+%         "1z";
+%         "2z";
+%         "3z";
+%         "4z"]
     
-thrustVals=[0;
+thrustVals=[0; % initialize thrust vals
             0;
             0;
             0;
@@ -41,16 +41,19 @@ thrustVals=[0;
             
                                                                                         
                                                                                         
-A=[-1,-1,0,0,0,0;
+A=[-1,-1,0,0,0,0; % convert to 12 individual thrusters
     0,0,-1,-1,0,0;
     0,0,0,0,-1,-1;
     0,0,Ry,-Ry,0,0;
     0,0,0,0,Rz,-Rz;
     Rx,-Rx,0,0,0,0];    
     
-b=[transpose(force_c);torque]
+b=[transpose(force_c);torque] % right hand side, force and torque
     
-y=A\b
+y=A\b % solve for thrusters
+
+% thruster logic, assign negative thrust to geometrically opposite thruster
+
 
 if y(1)>0
     thrustVals(1)=y(1)

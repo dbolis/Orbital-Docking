@@ -8,19 +8,31 @@ close all % close all graphic windows
 % ************************************************ %
 
 global count
-count=0
+count=0 % used in ODE integration to count iterations
 
 
-period=2*pi*sqrt(7178160^3/3.986e14)
+mu=3.986e14 % gravitational parameter [km^3/sec^2]
 
-T_c=period % chaser period [s]
-T_t=period % target period [s]
-T_v=period % virtual period [s]
+a_c= 7178160 % chaser semimajor axis [m]
+a_t= 7178160 % target semimajor axis [m]
+a_v= 7178160 % virtual semimajor axis [m]
+
+period_c=2*pi*sqrt(a_c^3/mu) % chaser orbital period [s]
+period_t=2*pi*sqrt(a_t^3/mu) % target orbital period [s]
+period_v=2*pi*sqrt(a_v^3/mu) % virtual orbital period [s]
+
+T_c=period_c % chaser period [s]
+T_t=period_t % target period [s]
+T_v=period_v % virtual period [s]
 e_c=0 % chaser eccentricity [-]
 e_t=0 % target eccentricity [-]
 e_v=0 % virtual eccentricity [-]
 n_c=(2*pi)/T_c % average chaser ang velocity [rad/s]
 n_t=(2*pi)/T_t % average target ang velocity [rad/s]
+
+p_c=a_c*(1-e_c^2) % chaser parameter [m]
+p_t=a_t*(1-e_t^2) % target parameter [m]
+p_v=a_v*(1-e_v^2) % target parameter [m]
 
 i_v=0.2 % inclination of virtual orbit
 omega_v=0.1 % RAAN of virtual orbit
@@ -31,17 +43,10 @@ AerS=pi*4^2 % need to add for both chaser and target
 c_D=2.2 % drag coefficient
 
 
-mu=3.986e14 % gravitational parameter [km^3/sec^2]
-a_c= 7178160 % chaser semimajor axis [m]
-a_t= 7178160 % target semimajor axis [m]
-a_v= 7178160 % virtual semimajor axis [m]
 
-p_c=a_c*(1-e_c^2) % chaser parameter [m]
-p_t=a_t*(1-e_t^2) % target parameter [m]
-p_v=a_v*(1-e_v^2) % target parameter [m]
-
-sidelength_c=1.5
+sidelength_c=1.5 % chasesr cube side length
 mc=100 % chaser mass [kg]
+mt=200 % target mass [kg]
 
 Ic=[(1/6)*mc*sidelength_c^2, 0, 0; % chaser inertial matrix [kg*m^2]
     0, (1/6)*mc*sidelength_c^2, 0;
@@ -60,31 +65,31 @@ q_t_0=[1;0;0;0]% initial target quaternion
 
 Ac_0=(q_c_0(1)^2-transpose(q_c_0(2:4))*q_c_0(2:4))*eye(3)+2*(q_c_0(2:4))*transpose(q_c_0(2:4))-2*q_c_0(1)*[0, -q_c_0(4), q_c_0(3);
                                                                                             q_c_0(4), 0, -q_c_0(2);
-                                                                                            -q_c_0(3), q_c_0(2), 0] % Equation 9 Liu
+                                                                                            -q_c_0(3), q_c_0(2), 0] % chaser quaternion rotation mat
                   
 At_0=(q_t_0(1)^2-transpose(q_t_0(2:4))*q_t_0(2:4))*eye(3)+2*(q_t_0(2:4))*transpose(q_t_0(2:4))-2*q_t_0(1)*[0, -q_t_0(4), q_t_0(3);
                                                                                             q_t_0(4), 0, -q_t_0(2);
-                                                                                            -q_t_0(3), q_t_0(2), 0] % Equation 9 Liu 
+                                                                                            -q_t_0(3), q_t_0(2), 0] % target quaternion rotation mat
                                                                                         
-Act_0=Ac_0*At_0 % Equation 10 Liu
+Act_0=Ac_0*At_0 % error quaternion rotion mat
 
-w_r_0=w_c_0-Act_0*w_t_0 % Equation 11 Liu
+w_r_0=w_c_0-Act_0*w_t_0 % relative ang velocity 
 
 w_r_0tilde = [0, -w_r_0(3), w_r_0(2);
              w_r_0(3), 0, -w_r_0(1);
               -w_r_0(2), w_r_0(1), 0] 
 
-q_r_0=quatProd(quatRecip(q_t_0),q_c_0) % Equation 13 Liu
+q_r_0=quatProd(quatRecip(q_t_0),q_c_0) % error quaternion
 dq_r_0=0.5*[0, -transpose(w_r_0);
-            w_r_0, -w_r_0tilde]*q_r_0 % Equation 14 Liu
+            w_r_0, -w_r_0tilde]*q_r_0 % derror quaternion
 
-dq_r_0vec=[0.05;0.3;-0.1]
+dq_r_0vec=[0.05;0.3;-0.1] % error quaternion vector component (override previous error quaternion
         
-T_0=[0, -q_r_0(4), q_r_0(3); q_r_0(4), 0, -q_r_0(2);-q_r_0(3), q_r_0(2), 0] + q_r_0(1)*eye(3)
+T_0=[0, -q_r_0(4), q_r_0(3); q_r_0(4), 0, -q_r_0(2);-q_r_0(3), q_r_0(2), 0] + q_r_0(1)*eye(3) % transform from dqr to wr
 
-w_e_0=2*inv(T_0)*dq_r_0vec
+w_e_0=2*inv(T_0)*dq_r_0vec % relative ang velocity 
 
-w_c_0=w_e_0+Act_0*w_t_0
+w_c_0=w_e_0+Act_0*w_t_0 % chaser ang velocity 
 
 theta_c_0=0 % initial chaser angle [rad]
 theta_t_0=0 % initial target angle [rad]
@@ -115,23 +120,29 @@ drho_d=[0; 0; 0] % desired final relative velocity
 q_d=[1;0;0;0] % desired final relatitve atttitude
 
 
-tsim = 20
-tstep = 1
+tsim_noActu = 20 % simulation no actuation
+tstep = 1 % integration time step
 options = 0
 X0Li=[theta_t_0;w_t_0;q_t_0;w_c_0;q_c_0;rho_c_0;drho_c_0;rho_t_0;drho_t_0]
 numb=20
 % inits=inits2
 % X0Li=[theta_t_0;inits(1:3,numb);q_t_0;inits(10:12,numb);inits(19:22,numb);inits(13:15,numb);inits(16:18,numb);inits(4:6,numb);inits(7:9,numb)]
 
+tsim_Actu = 20 % simulation with actuation
 
 
+[pulses,out]=thrusterIntegration(X0Li,options,tsim_Actu,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mt,mu,beta,p,q,eta,q_d,rho_d,drho_d) % with actuation
 
-[pulses,out]=thrusterIntegration(X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+%% Plotting 
 
-%% Plotting integrationLi
+%%% no actuation
 
-% [t,x] = ode45(@integrationLi,0:tstep:tsim,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
-t=transpose([1:1:21])
+% [t,x] = ode45(@integrationLi,0:tstep:tsim_noAct,X0Li,options,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mt,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+% t=transpose([1:1:tsim_noAct+1]) % no actuation 
+
+%%% actuation
+
+t=transpose([1:1:tsim_Actu+1]) % actuation 
 x=out
 timeAll=size(t);
 w_t=transpose(x(1:timeAll(1),2:4));
@@ -148,10 +159,10 @@ q_r=quatProdMat(quatRecipMat(q_t),q_c);
 
 for i=1:1:size(t)
 
-Ar=(q_r(1,i)^2-transpose(q_r(2:4,i))*q_r(2:4,i))*eye(3)+2*(q_r(2:4,i))*transpose(q_r(2:4,i))-2*q_r(1,i)*[0, -q_r(4,i), q_r(3,i); %EQ 10 Liu
+Ar=(q_r(1,i)^2-transpose(q_r(2:4,i))*q_r(2:4,i))*eye(3)+2*(q_r(2:4,i))*transpose(q_r(2:4,i))-2*q_r(1,i)*[0, -q_r(4,i), q_r(3,i); 
                                                                                             q_r(4,i), 0, -q_r(2,i);
                                                                                             -q_r(3,i), q_r(2,i), 0]; 
-
+                                                                                        
 w_r=w_c(1:3,i)-Ar*w_t(1:3,i);
 w_rOut(1:3,i)=w_r;
 

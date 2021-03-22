@@ -1,11 +1,11 @@
 function out=thruster2dynamics(thrusterVec,q_c,theta, i, omega)
 
-Rx=0.5
-Ry=0.5
-Rz=0.5
+Rx=0.5 % moment arm x
+Ry=0.5 % moment arm y
+Rz=0.5 % moment arm z
 
 
-
+% thrusters 
 t1x=thrusterVec(1)
 t2x=thrusterVec(2)
 t3x=thrusterVec(3)
@@ -19,6 +19,8 @@ t2z=thrusterVec(10)
 t3z=thrusterVec(11)
 t4z=thrusterVec(12)
 
+
+% control force and torque
 Fx=-t1x-t2x+t3x+t4x
 Fy=-t1y-t2y+t3y+t4y
 Fz=-t1z-t2z+t3z+t4z
@@ -29,7 +31,7 @@ Tz=Rx*t1x-Rx*t2x+Rx*t3x-Rx*t4x
 force_c=[Fx, Fy, Fz]
 torque_c=[Tx, Ty, Tz]
 
-
+% convert from chaser to virtual frame
 force_v=force_c*((q_c(1)^2-transpose(q_c(2:4))*q_c(2:4))*eye(3)+2*(q_c(2:4))*transpose(q_c(2:4))-2*q_c(1)*[0, -q_c(4), q_c(3)
                                                                                             q_c(4), 0, -q_c(2)
                                                                                             -q_c(3), q_c(2), 0])*transpose(ECI2LVLH313(theta, i, omega))

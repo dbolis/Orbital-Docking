@@ -1,16 +1,16 @@
-function der = pulseIntegration(t,x,thrusterVec,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function der = pulseIntegration(t,x,thrusterVec,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mt,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 
 theta_v=x(1); % True anamoly 
 w_t=x(2:4); % target ang velocity
-q_t=x(5:8); % target attitude
-w_c=x(9:11);% relative angular velocity
-q_c=x(12:15)
-rho_c=x(16:18)
-drho_c=x(19:21)
-rho_t=x(22:24)
-drho_t=x(25:27)
-rho=rho_c-rho_t
-drho=drho_c-drho_t
+q_t=x(5:8); % target quaternion
+w_c=x(9:11); % relative angular velocity
+q_c=x(12:15); % chaser quaternion
+rho_c=x(16:18); % chaser relative position
+drho_c=x(19:21); % chaser relative velocity
+rho_t=x(22:24); % target relative position
+drho_t=x(25:27); % target relative velocity
+rho=rho_c-rho_t; % relative position
+drho=drho_c-drho_t; % relative velocity 
 
 
 %% Dynamics with Perterbances
@@ -245,7 +245,7 @@ G_c=[0, -transpose(w_c);
 dq_r=0.5*G_r*q_r
 
 
-thrustDynamics=thruster2dynamics(thrusterVec,q_c,theta_v,i_v,omega_v)
+thrustDynamics=thruster2dynamics(thrusterVec,q_c,theta_v,i_v,omega_v) % convert from thruster to force and torque
 Fc=thrustDynamics(1:3)
 Tcprime=thrustDynamics(4:6)
 
@@ -255,8 +255,8 @@ der(1,1)=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % derivative True anamoly
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
 der(5:8,1)=0.5*G_t*q_t % derivative target attitude
 der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity
-der(12:15,1)=0.5*G_c*q_c
-der(16:18,1)=drho_c
-der(19:21,1)=g_c/mc+Fc/mc+d_c
-der(22:24,1)=drho_t
-der(25:27,1)=d2rho_t+d_t
+der(12:15,1)=0.5*G_c*q_c % derivative chaser quaternion 
+der(16:18,1)=drho_c % derivative chaser relative position
+der(19:21,1)=g_c/mc+Fc/mc+d_c % derivative chaser relative velocity
+der(22:24,1)=drho_t % derivative target relative position
+der(25:27,1)=d2rho_t+d_t % derivative target relative velocity

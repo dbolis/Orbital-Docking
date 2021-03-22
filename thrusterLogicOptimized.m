@@ -1,5 +1,7 @@
 function out=thrusterLogicOptimized(force,torque,q_c,theta, i, omega)
 
+% optimized to reduce thrust, but leads to negative thrust vals
+
 force_c=transpose(force)*ECI2LVLH313(theta, i, omega)*transpose((q_c(1)^2-transpose(q_c(2:4))*q_c(2:4))*eye(3)+2*(q_c(2:4))*transpose(q_c(2:4))-2*q_c(1)*[0, -q_c(4), q_c(3)
                                                                                             q_c(4), 0, -q_c(2)
                                                                                             -q_c(3), q_c(2), 0])

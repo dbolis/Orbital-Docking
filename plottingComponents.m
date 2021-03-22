@@ -16,7 +16,7 @@
 %    x91, x92, x93, x94, x95 ,x96, x97, x98, x99, x100]
 
 % x=[x27, x30, x88]
-t=transpose([1:1:751]);
+t=transpose([1:1:751]); % length of simulation
 
 X=[]
 Y=[]
@@ -33,11 +33,9 @@ wy=[]
 wz=[]
 
 
-for i=0:1:96
+for i=0:1:96 % number of simulations starting with 0
 
 timeAll=size(t);
-% error=transpose(x(1:timeAll(1),12:18));
-% derror=transpose(x(1:timeAll(1),19:25));
 q_t=transpose(x(1:timeAll(1),5+i*34:8+i*34));
 w_c=transpose(x(1:timeAll(1),9+i*34:11+i*34));
 w_t=transpose(x(1:timeAll(1),2+i*34:4+i*34));
@@ -47,9 +45,6 @@ rho_t=transpose(x(1:timeAll(1),22+i*34:24+i*34));
 drho_t=transpose(x(1:timeAll(1),25+i*34:27+i*34));
 rho=rho_c-rho_t
 drho=drho_c-drho_t
-% q_r=error(4:7,:)+q_d.*ones(4,timeAll(1));
-% dq_r=derror(4:7,:);
-% rho_out=error(1:3,:)+rho_d.*ones(3,timeAll(1));
 q_c=transpose(x(1:timeAll(1),12+i*34:15+i*34));
 q_r=quatProdMat(quatRecipMat(q_t),q_c);
 

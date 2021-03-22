@@ -1,25 +1,25 @@
-function der = integrationLi(t,x,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mu,beta,p,q,eta,q_d,rho_d,drho_d)
+function der = integrationLi(t,x,e_v,p_v,i_v,omega_v,Re,J2,omega_E,AerS,c_D,e_c,n_c,e_t,n_t,Ic,It,mc,mt,mu,beta,p,q,eta,q_d,rho_d,drho_d)
 theta_v=x(1); % True anamoly 
 w_t=x(2:4); % target ang velocity
-q_t=x(5:8); % target attitude
-w_c=x(9:11);% relative angular velocity
-q_c=x(12:15)
-rho_c=x(16:18)
-drho_c=x(19:21)
-rho_t=x(22:24)
-drho_t=x(25:27)
-rho=rho_c-rho_t
-drho=drho_c-drho_t
+q_t=x(5:8); % target quaternion
+w_c=x(9:11); % relative angular velocity
+q_c=x(12:15) % chaser quaternion
+rho_c=x(16:18) % chaser relative position
+drho_c=x(19:21) % chaser relative velocity
+rho_t=x(22:24) % target relative position
+drho_t=x(25:27) % target relative velocity
+rho=rho_c-rho_t % relative position
+drho=drho_c-drho_t % relative velocity 
 
 
 
 global count logicMat2 Tcontrol Fcontrol
 count=count+1
 
-mt=200
+
 %% Dynamics with Perterbances
-dtheta_v=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2
-d2theta_v=-2*(mu/p_v^3)*(e_v*sin(theta_v))*(1+e_v*cos(theta_v))^3
+dtheta_v=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % virtual orbit angular rate
+d2theta_v=-2*(mu/p_v^3)*(e_v*sin(theta_v))*(1+e_v*cos(theta_v))^3 % virtual orbit angular acceleration
 
 %%% Chaser
 
@@ -48,12 +48,12 @@ czeta_c=h_cVers(3)/cos(phi_c)
 
 zeta_c=2*atan(szeta_c/(1+czeta_c)) % heading angle
 
-%%% J2
+%%%% J2
 fJ2_c_c=3*Re^2*J2*mu/(norm(r_cVec_ECI))^4*[(3*sin(phi_c)^2-1)/2, -sin(phi_c)*cos(phi_c)*sin(zeta_c), -sin(phi_c)*cos(phi_c)*cos(zeta_c)] % J2 disturbance on chaser in chaser frame
 
 fJ2_c_v=fJ2_c_c*ECI2LVLH123(zeta_c, phi_c, lambda_c)*transpose(ECI2LVLH313(theta_v,i_v,omega_v)) % J2 disturbance on chaser in virtual frame
 
-%%% Drag
+%%%% Drag
 
 a_c=mu/((2*mu/norm(r_cVec_ECI))-norm(v_cVec_ECI)^2)
 e_c=sqrt(1-(norm(h_cVec)^2/(mu*a_c)))
@@ -77,7 +77,7 @@ atmDensity_c=1.225*exp(-(norm(r_cVec_ECI)-Re)/10332.6) %% apply better fit.. neg
 fDrag_c_c=-0.5*c_D*AerS/mc*atmDensity_c*norm(v_r_cVec)*v_r_cVec % in LVLH chaser frame
 fDrag_c_v=fDrag_c_c*ECI2LVLH123(zeta_c, phi_c, lambda_c)*transpose(ECI2LVLH313(theta_v,i_v,omega_v)) % in LVLH virtual frame
 
-%%% Solar Radiation Pressure
+%%%% Solar Radiation Pressure
 theta_sol_0=0 % theta_sol at t=0
 theta_sol=theta_sol_0+(2*pi)*(t-0)/31558149.5 % sun position in ECI frame
 ecl_obliq=deg2rad(23.45) % earth obliquity 
@@ -122,12 +122,12 @@ czeta_t=h_tVers(3)/cos(phi_t)
 
 zeta_t=2*atan(szeta_t/(1+czeta_t)) % heading angle
 
-%%J2
+%%%% J2
 fJ2_t_t=3*Re^2*J2*mu/(norm(r_tVec_ECI))^4*[(3*sin(phi_t)^2-1)/2, -sin(phi_t)*cos(phi_t)*sin(zeta_t), -sin(phi_t)*cos(phi_t)*cos(zeta_t)] % J2 disturbance on target in target frame
 
 fJ2_t_v=fJ2_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v)) % J2 disturbance on target in virtual frame
 
-%%% Drag
+%%%% Drag
 a_t=mu/((2*mu/norm(r_tVec_ECI))-norm(v_tVec_ECI)^2)
 e_t=sqrt(1-(norm(h_tVec)^2/(mu*a_t)))
 v_radial_t=dot(v_tVec_ECI,r_tVec_ECI)/norm(r_tVec_ECI)
@@ -150,7 +150,7 @@ fDrag_t_t=-0.5*c_D*AerS/mt*atmDensity_t*norm(v_r_tVec)*v_r_tVec
 fDrag_t_v=fDrag_t_t*ECI2LVLH123(zeta_t, phi_t, lambda_t)*transpose(ECI2LVLH313(theta_v,i_v,omega_v))
 
 
-%%% Solar Radiation Pressure
+%%%% Solar Radiation Pressure
 i_t=acos(h_tVers(3))
 somega_t=h_tVers(1)/sin(i_t)
 comega_t=-h_tVers(2)/sin(i_t)
@@ -187,7 +187,7 @@ d2Z_c= -mu*Z_c/((norm(r_cVec_v))^3); %EQ 18 Pontani
 
 d2rho_c=[d2X_c;d2Y_c;d2Z_c]; %d2rho 
 
-g_c=mc*(-mu*r_cVec_v/(norm(r_cVec_v)^3)+mu*r_tVec_v/(norm(r_tVec_v)^3)) %% need to rewrite!
+g_c=mc*(-mu*r_cVec_v/(norm(r_cVec_v)^3)+mu*r_tVec_v/(norm(r_tVec_v)^3)) % term in Li dynamics
 
 
 
@@ -377,24 +377,23 @@ Nstar=transpose(P)*([0, -Pdq_r(3), Pdq_r(2); Pdq_r(3), 0, -Pdq_r(1); -Pdq_r(2), 
     0.5*transpose(P)*Ic*([0, -twoPdq_r(3), twoPdq_r(2); twoPdq_r(3), 0, -twoPdq_r(1);-twoPdq_r(2), twoPdq_r(1), 0]*Ar*w_t-Ar*dw_t)
 
 Tc=Nstar-Cstar*beta*gradUquat-Istar*beta*grad2Uquat*dq_r(2:4)-gamma2*satAtt-mdiag*satAtt
-Tcprime = 2*transpose(T)*Tc
+Tcprime = 2*transpose(T)*Tc 
 
 
 
- logicMat2=[logicMat2, thrusterLogic2(Fc,Tcprime,q_c,theta_v, i_v, omega_v)];
- Fcontrol=[Fcontrol, Fc];
- Tcontrol=[Tcontrol, Tc];
+ logicMat2=[logicMat2, thrusterLogic2(Fc,Tcprime,q_c,theta_v, i_v, omega_v)]; % output to thruster integration 
+ Fcontrol=[Fcontrol, Fc]; % output control force
+ Tcontrol=[Tcontrol, Tc]; % output control torque
 
 %% Derivatives
 
 t
 der(1,1)=sqrt(mu/p_v^3)*(1+e_v*cos(theta_v))^2 % derivative True anamoly 
 der(2:4,1)=It\(-w_t_tilde*It*w_t) % derivative target ang velocity
-der(5:8,1)=0.5*G_t*q_t % derivative target attitude
+der(5:8,1)=0.5*G_t*q_t % derivative target quaternion
 der(9:11,1)=Ic\(-w_c_tilde*Ic*w_c)+Ic\Tcprime % derivative relative angular velocity
-der(12:15,1)=0.5*G_c*q_c
-der(16:18,1)=drho_c
-der(19:21,1)=d_c+Fc_v/mc+g_c/mc
-der(22:24,1)=drho_t
-der(25:27,1)=d2rho_t+d_t
-
+der(12:15,1)=0.5*G_c*q_c % derivative chaser quaternion 
+der(16:18,1)=drho_c % derivative chaser relative position
+der(19:21,1)=d_c+Fc_v/mc+g_c/mc % derivative chaser relative velocity
+der(22:24,1)=drho_t % derivative target relative position
+der(25:27,1)=d2rho_t+d_t % derivative target relative velocity
